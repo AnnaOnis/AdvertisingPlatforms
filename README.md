@@ -57,9 +57,6 @@ dotnet run --project AdvertisingPlatforms
 ```bash
 # Запуск всех тестов
 dotnet test
-
-# Запуск тестов с покрытием
-dotnet test --collect:"XPlat Code Coverage"
 ```
 ---
 
