@@ -6,15 +6,15 @@ using Moq;
 
 namespace AdvPlatformsTests
 {
-    public class AdvPlatformServiceTests
+    public class AdvertisingPlatformServiceTests
     {
-        private readonly Mock<ILogger<AdvPlatformService>> _loggerMock;
-        private readonly AdvPlatformService _service;
+        private readonly Mock<ILogger<AdvertisingPlatformService>> _loggerMock;
+        private readonly AdvertisingPlatformService _service;
 
-        public AdvPlatformServiceTests()
+        public AdvertisingPlatformServiceTests()
         {
-            _loggerMock = new Mock<ILogger<AdvPlatformService>>();
-            _service = new AdvPlatformService(_loggerMock.Object);
+            _loggerMock = new Mock<ILogger<AdvertisingPlatformService>>();
+            _service = new AdvertisingPlatformService(_loggerMock.Object);
         }
 
         /// <summary>
@@ -28,8 +28,8 @@ namespace AdvPlatformsTests
         public void LoadData_OverridesPreviousData()
         {
             // Arrange
-            _service.Upload(new List<AdvPlatform> { new("Old", new[] { "/ru" }) });
-            _service.Upload(new List<AdvPlatform> { new("New", new[] { "/ru" }) });
+            _service.Upload(new List<AdvertisingPlatform> { new("Old", new[] { "/ru" }) });
+            _service.Upload(new List<AdvertisingPlatform> { new("New", new[] { "/ru" }) });
 
             // Act
             var result = _service.Search("/ru");
@@ -50,7 +50,7 @@ namespace AdvPlatformsTests
         public void Search_ReturnsAllNestedPlatforms()
         {
             // Arrange
-            _service.Upload(new List<AdvPlatform>
+            _service.Upload(new List<AdvertisingPlatform>
                 {
                     new("Global", new[] { "/ru" }),
                     new("Local", new[] { "/ru/svrd" })
@@ -74,7 +74,7 @@ namespace AdvPlatformsTests
         public void Search_UnknownLocation_ReturnsEmpty()
         {
             // Arrange
-            _service.Upload(new List<AdvPlatform> { new("A", new[] { "ru", "/ru/msk/" }) });
+            _service.Upload(new List<AdvertisingPlatform> { new("A", new[] { "ru", "/ru/msk/" }) });
 
             // Act
             var result = _service.Search("/unknown");
@@ -95,8 +95,8 @@ namespace AdvPlatformsTests
         public void Concurrent_Load_And_Search()
         {
             Parallel.Invoke(
-                () => _service.Upload(new List<AdvPlatform> { new("Old", new[] { "/ru" }) }),
-                () => _service.Upload(new List<AdvPlatform> { new("New", new[] { "/ru", "/tu/msk" }) }),
+                () => _service.Upload(new List<AdvertisingPlatform> { new("Old", new[] { "/ru" }) }),
+                () => _service.Upload(new List<AdvertisingPlatform> { new("New", new[] { "/ru", "/tu/msk" }) }),
                 () => _service.Search("/ru"),
                 () => _service.Search("/ru/msk")
             );            
@@ -132,9 +132,9 @@ namespace AdvPlatformsTests
         /// - Каждая платформа имеет 10 локаций
         /// - Локации вида /ru/svrd/XX
         /// </remarks>
-        private static List<AdvPlatform> GenerateLargeDataset()
+        private static List<AdvertisingPlatform> GenerateLargeDataset()
         {
-            var platforms = new List<AdvPlatform>();
+            var platforms = new List<AdvertisingPlatform>();
             var random = new Random();
 
             for (int i = 0; i < 1000; i++)
@@ -144,7 +144,7 @@ namespace AdvPlatformsTests
                 {
                     locations.Add($"/ru/svrd/{random.Next(1, 100)}");
                 }
-                platforms.Add(new AdvPlatform($"Platform_{i}", locations.ToArray()));
+                platforms.Add(new AdvertisingPlatform($"Platform_{i}", locations.ToArray()));
             }
 
             return platforms;

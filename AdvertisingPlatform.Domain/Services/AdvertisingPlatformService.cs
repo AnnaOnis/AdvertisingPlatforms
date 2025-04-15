@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using AdvertisingPlatforms.Models;
 
@@ -8,13 +8,13 @@ namespace AdvertisingPlatforms.Services
     /// <summary>
     /// Сервис для работы с рекламными площадками
     /// </summary>
-    public class AdvPlatformService
+    public class AdvertisingPlatformService
     {
-        private readonly ILogger<AdvPlatformService> _logger;
-        private ImmutableDictionary<string, ImmutableHashSet<AdvPlatform>>  _locations = 
-            ImmutableDictionary<string, ImmutableHashSet<AdvPlatform>>.Empty;
+        private readonly ILogger<AdvertisingPlatformService> _logger;
+        private ImmutableDictionary<string, ImmutableHashSet<AdvertisingPlatform>>  _locations = 
+            ImmutableDictionary<string, ImmutableHashSet<AdvertisingPlatform>>.Empty;
 
-        public AdvPlatformService(ILogger<AdvPlatformService> logger)
+        public AdvertisingPlatformService(ILogger<AdvertisingPlatformService> logger)
         {
             _logger = logger;
         }
@@ -23,7 +23,7 @@ namespace AdvertisingPlatforms.Services
         /// Загружает новые данные о площадках
         /// </summary>
         /// <param name="platforms">Коллекция рекламных площадок</param>
-        public void Upload(IEnumerable<AdvPlatform> platforms)
+        public void Upload(IEnumerable<AdvertisingPlatform> platforms)
         {
             _logger.LogInformation("Starting data upload...");
 
@@ -40,7 +40,7 @@ namespace AdvertisingPlatforms.Services
                 return;
             }
 
-            var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<AdvPlatform>>();
+            var builder = ImmutableDictionary.CreateBuilder<string, ImmutableHashSet<AdvertisingPlatform>>();
 
             var processedLocations = 0;
 
@@ -53,7 +53,7 @@ namespace AdvertisingPlatforms.Services
                         var normLocation = NormalizeLocation(location);
                         if(!builder.TryGetValue(normLocation, out var set))
                         {
-                            set = ImmutableHashSet<AdvPlatform>.Empty;
+                            set = ImmutableHashSet<AdvertisingPlatform>.Empty;
                         }
                         set = set.Add(platform);
                         builder[location] = set;
@@ -77,7 +77,7 @@ namespace AdvertisingPlatforms.Services
         /// </summary>
         /// <param name="location">Целевая локация</param>
         /// <returns>Коллекция подходящих площадок</returns>
-        public IEnumerable<AdvPlatform> Search (string location)
+        public IEnumerable<AdvertisingPlatform> Search (string location)
         {
             _logger.LogDebug("Searching for location: {Location}", location);
 
@@ -89,7 +89,7 @@ namespace AdvertisingPlatforms.Services
 
             var normLocation = NormalizeLocation(location);
             var prefixes = GetPrefixes(normLocation);
-            var platforms = new HashSet<AdvPlatform>();
+            var platforms = new HashSet<AdvertisingPlatform>();
 
             foreach ( var prefix in prefixes)
             {

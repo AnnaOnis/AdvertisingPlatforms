@@ -15,9 +15,9 @@ namespace AdvertisingPlatforms.Parser
         /// </summary>
         /// <param name="stream">Поток данных с текстовой информацией</param>
         /// <returns>Список распарсенных площадок</returns>
-        public static List<AdvPlatform> ParseFile(Stream stream)
+        public static List<AdvertisingPlatform> ParseFile(Stream stream)
         {
-            var platformDict = new Dictionary<string, AdvPlatform>();
+            var platformDict = new Dictionary<string, AdvertisingPlatform>();
             var reader = new StreamReader(stream);
 
             var lineNumber = 0;
@@ -64,12 +64,12 @@ namespace AdvertisingPlatforms.Parser
                             .Distinct()
                             .ToArray();
 
-                        platformDict[name] = new AdvPlatform(name, mergedLocations);
+                        platformDict[name] = new AdvertisingPlatform(name, mergedLocations);
                         _logger.LogDebug("Merged locations for platform {PlatformName}", name);
                     }
                     else
                     {
-                        platformDict[name] = new AdvPlatform(name, locations);
+                        platformDict[name] = new AdvertisingPlatform(name, locations);
                         _logger.LogDebug("Added new platform {PlatformName}", name);
                     }
                 }

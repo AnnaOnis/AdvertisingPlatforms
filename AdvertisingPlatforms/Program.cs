@@ -19,7 +19,7 @@ namespace AdvertisingPlatforms
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            builder.Services.AddSingleton<AdvPlatformService>();
+            builder.Services.AddSingleton<AdvertisingPlatformService>();
 
 
             var app = builder.Build();

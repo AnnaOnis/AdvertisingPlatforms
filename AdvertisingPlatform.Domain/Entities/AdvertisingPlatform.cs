@@ -3,7 +3,7 @@
     /// <summary>
     /// Представляет рекламную площадку с набором локаций
     /// </summary>
-    public class AdvPlatform
+    public class AdvertisingPlatform
     {
         /// <summary>
         /// Название рекламной площадки
@@ -21,7 +21,7 @@
         /// <param name="name">Название площадки (не может быть пустым)</param>
         /// <param name="locations">Массив локаций (минимум одна локация)</param>
         /// <exception cref="ArgumentException">Выбрасывается при невалидных аргументах</exception>
-        public AdvPlatform( string name, string[] locations) 
+        public AdvertisingPlatform( string name, string[] locations) 
         {
             ArgumentNullException.ThrowIfNull(name);
             ArgumentNullException.ThrowIfNull(locations);
