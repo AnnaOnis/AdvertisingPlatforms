@@ -18,7 +18,7 @@ namespace AdvertisingPlatforms.Parser
         public static List<AdvertisingPlatform> ParseFile(Stream stream)
         {
             var platformDict = new Dictionary<string, AdvertisingPlatform>();
-            var reader = new StreamReader(stream);
+            using var reader = new StreamReader(stream);
 
             var lineNumber = 0;
             var line = string.Empty;

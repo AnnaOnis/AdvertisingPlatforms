@@ -11,12 +11,12 @@ namespace AdvertisingPlatforms.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AdvPlatformsController : ControllerBase
+    public class AdvertisingPlatformsController : ControllerBase
     {
-        private readonly AdvPlatformService _service;
-        private readonly ILogger<AdvPlatformsController> _logger;
+        private readonly AdvertisingPlatformService _service;
+        private readonly ILogger<AdvertisingPlatformsController> _logger;
 
-        public AdvPlatformsController(AdvPlatformService service, ILogger<AdvPlatformsController> logger)
+        public AdvertisingPlatformsController(AdvertisingPlatformService service, ILogger<AdvertisingPlatformsController> logger)
         {
             _service = service;
             _logger = logger;

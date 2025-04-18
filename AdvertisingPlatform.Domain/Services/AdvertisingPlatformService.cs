@@ -2,13 +2,12 @@
 using Microsoft.Extensions.Logging;
 using System.Text;
 using AdvertisingPlatforms.Models;
+using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.Domain.Extensions;
 
 namespace AdvertisingPlatforms.Services
 {
-    /// <summary>
-    /// Сервис для работы с рекламными площадками
-    /// </summary>
-    public class AdvertisingPlatformService
+    public class AdvertisingPlatformService : IAdvertisingPlatformService
     {
         private readonly ILogger<AdvertisingPlatformService> _logger;
         private ImmutableDictionary<string, ImmutableHashSet<AdvertisingPlatform>>  _locations = 
@@ -19,10 +18,6 @@ namespace AdvertisingPlatforms.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Загружает новые данные о площадках
-        /// </summary>
-        /// <param name="platforms">Коллекция рекламных площадок</param>
         public void Upload(IEnumerable<AdvertisingPlatform> platforms)
         {
             _logger.LogInformation("Starting data upload...");
@@ -50,7 +45,7 @@ namespace AdvertisingPlatforms.Services
                 {
                     foreach ( var location in platform.Locations)
                     {
-                        var normLocation = NormalizeLocation(location);
+                        var normLocation = location.NormalizeLocation();
                         if(!builder.TryGetValue(normLocation, out var set))
                         {
                             set = ImmutableHashSet<AdvertisingPlatform>.Empty;
@@ -72,11 +67,6 @@ namespace AdvertisingPlatforms.Services
             platformList.Count, processedLocations);
         }
 
-        /// <summary>
-        /// Ищет площадки по указанной локации
-        /// </summary>
-        /// <param name="location">Целевая локация</param>
-        /// <returns>Коллекция подходящих площадок</returns>
         public IEnumerable<AdvertisingPlatform> Search (string location)
         {
             _logger.LogDebug("Searching for location: {Location}", location);
@@ -87,8 +77,11 @@ namespace AdvertisingPlatforms.Services
                 throw new ArgumentNullException(nameof(location));
             }
 
-            var normLocation = NormalizeLocation(location);
-            var prefixes = GetPrefixes(normLocation);
+            var normLocation = location.NormalizeLocation();
+            var prefixes = normLocation.GetPrefixes();
+
+            _logger.LogDebug("Generated {Count} prefixes for location {Location}", prefixes.Count, normLocation);
+
             var platforms = new HashSet<AdvertisingPlatform>();
 
             foreach ( var prefix in prefixes)
@@ -103,35 +96,6 @@ namespace AdvertisingPlatforms.Services
             platforms.Count, location);
 
             return platforms;
-        }
-
-        private string NormalizeLocation(string location)
-        {
-            if (string.IsNullOrEmpty(location)) return "/";
-
-            var trimmed = location.Trim();
-            if (!trimmed.StartsWith("/")) trimmed = "/" + trimmed;
-            return trimmed.TrimEnd('/');
-        }
-        private IEnumerable<string> GetPrefixes(string location)
-        {
-            if (string.IsNullOrEmpty(location)) throw new ArgumentNullException(nameof(location));
-
-            var parts = location.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            var prefixes = new List<string>();
-            var sb = new StringBuilder();
-
-            foreach (var part in parts)
-            {
-                sb.Append('/');
-                sb.Append(part);
-                prefixes.Add(sb.ToString());
-            }
-
-            _logger.LogDebug("Generated {Count} prefixes for location {Location}",
-            prefixes.Count, location);
-
-            return prefixes;
         }
     }
 }
