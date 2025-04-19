@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Exceptions;
+﻿using AdvertisingPlatforms.Domain.Entities;
+using AdvertisingPlatforms.Domain.Exceptions.Validation;
 using AdvertisingPlatforms.Domain.Interfaces;
 
 namespace AdvertisingPlatforms.Domain.Validators
@@ -18,7 +12,7 @@ namespace AdvertisingPlatforms.Domain.Validators
                 throw new ArgumentNullException(nameof(platforms));
 
             if (!platforms.Any())
-                throw new DomainValidationException("Collection cannot be empty");
+                throw new PlatformValidationException("Collection of platforms cannot be empty");
 
             foreach (var platform in platforms)
             {
@@ -31,10 +25,10 @@ namespace AdvertisingPlatforms.Domain.Validators
                 throw new ArgumentNullException(nameof(platform));
 
             if (string.IsNullOrWhiteSpace(platform.Name))
-                throw new DomainValidationException($"Platform name cannot be empty (Platform: {platform.Name})");
+                throw new PlatformValidationException($"Platform name cannot be empty (Platform: {platform.Name})");
 
             if (!platform.Locations.Any())
-                throw new DomainValidationException($"Platform must have at least one location (Platform: {platform.Name})");
+                throw new PlatformValidationException($"Platform must have at least one location (Platform: {platform.Name})");
         }
     }
 }
