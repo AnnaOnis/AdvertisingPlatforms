@@ -1,10 +1,17 @@
-﻿namespace AdvertisingPlatforms.Models
+﻿using AdvertisingPlatforms.Domain.Interfaces;
+
+namespace AdvertisingPlatforms.Domain.Entities
 {
     /// <summary>
     /// Представляет рекламную площадку с набором локаций
     /// </summary>
-    public class AdvertisingPlatform
+    public class AdvertisingPlatform : IEntity
     {
+        /// <summary>
+        /// Уникальный идентификатор платформы.
+        /// </summary>
+        public Guid Id { get; init; }
+
         /// <summary>
         /// Название рекламной площадки
         /// </summary>
@@ -13,31 +20,16 @@
         /// <summary>
         /// Массив локаций, где действует площадка
         /// </summary>
-        public string[] Locations { get; set; }
+        public IEnumerable<Location> Locations { get; set; }
 
         /// <summary>
         /// Создает новый экземпляр рекламной площадки
         /// </summary>
         /// <param name="name">Название площадки (не может быть пустым)</param>
         /// <param name="locations">Массив локаций (минимум одна локация)</param>
-        /// <exception cref="ArgumentException">Выбрасывается при невалидных аргументах</exception>
-        public AdvertisingPlatform( string name, string[] locations) 
+        public AdvertisingPlatform( string name, IEnumerable<Location> locations) 
         {
-            ArgumentNullException.ThrowIfNull(name);
-            ArgumentNullException.ThrowIfNull(locations);
-
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Name cannot be empty or whitespace.", nameof(name));
-
-            if (locations.Length == 0)
-                throw new ArgumentException("Locations array must not be empty.", nameof(locations));
-
-            foreach (var location in locations)
-            {
-                if (string.IsNullOrWhiteSpace(location))
-                    throw new ArgumentException("Location elements cannot be empty or whitespace.", nameof(locations));
-            }
-
+            Id = Guid.NewGuid();
             Name = name;
             Locations = locations;
         }

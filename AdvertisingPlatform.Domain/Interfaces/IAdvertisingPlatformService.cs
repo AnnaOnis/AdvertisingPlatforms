@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AdvertisingPlatforms.Models;
+﻿
+
+using AdvertisingPlatforms.Domain.Entities;
 
 namespace AdvertisingPlatforms.Domain.Interfaces
 {
@@ -16,13 +13,15 @@ namespace AdvertisingPlatforms.Domain.Interfaces
         /// Загружает новые данные о площадках
         /// </summary>
         /// <param name="platforms">Коллекция рекламных площадок</param>
-        void Upload(IEnumerable<AdvertisingPlatform> platforms);
+        /// <param name="cancellationToken">Токен для отслеживания запросов на отмену</param>
+        Task Upload(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken);
 
         /// <summary>
         /// Ищет площадки по указанной локации
         /// </summary>
         /// <param name="location">Целевая локация</param>
+        /// <param name="cancellationToken">Токен для отслеживания запросов на отмену</param>
         /// <returns>Коллекция подходящих площадок</returns>
-        IEnumerable<AdvertisingPlatform> Search(string location);
+        Task<IReadOnlyList<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken);
     }
 }
