@@ -1,86 +1,62 @@
-﻿using AdvertisingPlatforms.Models;
+﻿
+
+using AdvertisingPlatforms.Domain.Entities;
+using AdvertisingPlatforms.Domain.Extensions;
 
 namespace AdvertisingPlatforms.Parser
 {
     /// <summary>
     /// Парсер текстовых файлов с рекламными площадками
     /// </summary>
-    public static class PlatformsFileParser
+    public class PlatformsFileParser
     {
-        private static readonly ILogger _logger = LoggerFactory.Create(b => b.AddConsole())
-        .CreateLogger("PlatformsFileParser");
+        private const char _separatorColon = ':';
+        private const char _separatorComma = ',';
+
+        private readonly ILogger<PlatformsFileParser> _logger;
+
+        public PlatformsFileParser(ILogger<PlatformsFileParser> logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Парсит поток данных с информацией о площадках
         /// </summary>
         /// <param name="stream">Поток данных с текстовой информацией</param>
         /// <returns>Список распарсенных площадок</returns>
-        public static List<AdvertisingPlatform> ParseFile(Stream stream)
+        public IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream)
         {
-            var platformDict = new Dictionary<string, AdvertisingPlatform>();
             using var reader = new StreamReader(stream);
 
-            var lineNumber = 0;
-            var line = string.Empty;
+            var content = reader.ReadToEnd();
+            var lines = content.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
 
-            while((line = reader.ReadLine()) is not null)
-            {
-                lineNumber++;
+            return lines
+                .Select((line, index) => ParseLine(line, index + 1))
+                .Where(platform => platform != null)
+                .ToList()
+                .AsReadOnly();
+        }
 
-                if (string.IsNullOrWhiteSpace(line))
+        private AdvertisingPlatform ParseLine(string line, int lineNumber)
+        {
+            line.ValidateContentLine(lineNumber);
+
+            var parts = line.Split(_separatorColon);
+            var name = parts[0].Trim();
+            name.ValidatePlatformName(lineNumber);
+
+            var locations = parts[1].Split(_separatorComma)
+                .Select(l => l.Trim())
+                .Where(l => !string.IsNullOrEmpty(l))
+                .Select(l =>
                 {
-                    _logger.LogDebug("Skipped empty line {LineNumber}", lineNumber);
-                    continue;
-                }
+                    l.ValidateLocation(lineNumber);
+                    return new Location(l);
+                }).ToList().AsReadOnly();
 
-                var parts = line.Split(":", 2);
-                if (parts.Length != 2)
-                {
-                    _logger.LogWarning("Invalid format in line {LineNumber}: '{Line}'", lineNumber, line);
-                    continue;
-                }
-
-                var name = parts[0].Trim();
-                if (string.IsNullOrWhiteSpace(name))
-                {
-                    _logger.LogWarning("Empty name in line {LineNumber}", lineNumber);
-                    continue;
-                }
-
-                var locations = parts[1].Split(",");
-                locations = locations.Select(l =>  l.Trim()).Where(l => !string.IsNullOrEmpty(l)).ToArray();
-                if (locations.Length == 0)
-                {
-                    _logger.LogWarning("No valid locations in line {LineNumber}", lineNumber);
-                    continue;
-                }
-
-                try
-                {
-                    if (platformDict.TryGetValue(name, out var existingPlatform))
-                    {
-                        var mergedLocations = existingPlatform.Locations
-                            .Concat(locations)
-                            .Distinct()
-                            .ToArray();
-
-                        platformDict[name] = new AdvertisingPlatform(name, mergedLocations);
-                        _logger.LogDebug("Merged locations for platform {PlatformName}", name);
-                    }
-                    else
-                    {
-                        platformDict[name] = new AdvertisingPlatform(name, locations);
-                        _logger.LogDebug("Added new platform {PlatformName}", name);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error processing line {LineNumber}: '{Line}'", lineNumber, line);
-                }
-            }
-
-            _logger.LogInformation("Parsed {Count} platforms", platformDict.Count);
-            return platformDict.Values.ToList();
+            return new AdvertisingPlatform(name, locations);
         }
     }
 }
