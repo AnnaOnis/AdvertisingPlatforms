@@ -1,14 +1,14 @@
 ﻿
 
 using AdvertisingPlatforms.Domain.Entities;
+using AdvertisingPlatforms.Domain.Exceptions.Validation;
 using AdvertisingPlatforms.Domain.Extensions;
+using AdvertisingPlatforms.Domain.Interfaces;
 
 namespace AdvertisingPlatforms.Parser
 {
-    /// <summary>
-    /// Парсер текстовых файлов с рекламными площадками
-    /// </summary>
-    public class PlatformsFileParser
+
+    public class PlatformsFileParser : IParser
     {
         private const char _separatorColon = ':';
         private const char _separatorComma = ',';
@@ -20,11 +20,6 @@ namespace AdvertisingPlatforms.Parser
             _logger = logger;
         }
 
-        /// <summary>
-        /// Парсит поток данных с информацией о площадках
-        /// </summary>
-        /// <param name="stream">Поток данных с текстовой информацией</param>
-        /// <returns>Список распарсенных площадок</returns>
         public IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream)
         {
             using var reader = new StreamReader(stream);
@@ -53,8 +48,12 @@ namespace AdvertisingPlatforms.Parser
                 .Select(l =>
                 {
                     l.ValidateLocation(lineNumber);
+                    l = l.NormalizeLocationPath();
                     return new Location(l);
                 }).ToList().AsReadOnly();
+
+            if (locations.Count == 0)
+                throw new LineValidationException(lineNumber, "At least one valid location required");
 
             return new AdvertisingPlatform(name, locations);
         }

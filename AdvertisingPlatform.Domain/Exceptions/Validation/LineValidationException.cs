@@ -1,13 +1,9 @@
 ﻿namespace AdvertisingPlatforms.Domain.Exceptions.Validation
 {
     [Serializable]
-    internal class LineValidationException : DomainValidationException
+    public class LineValidationException : DomainValidationException
     {
         public int LineNumber { get; }
-
-        public LineValidationException()
-        {
-        }
 
         public LineValidationException(string? message) : base(message)
         {

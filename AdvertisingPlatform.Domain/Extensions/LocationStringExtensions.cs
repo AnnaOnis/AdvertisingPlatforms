@@ -7,21 +7,24 @@ using AdvertisingPlatforms.Services;
 
 namespace AdvertisingPlatforms.Domain.Extensions
 {
-    public static class LocationExtensions
+    public static class LocationStringExtensions
     {
         private const char slash = '/';
-        public static string NormalizeLocation(this string location)
+
+        public static string NormalizeLocationPath(this string location)
         {
             if (string.IsNullOrEmpty(location)) return $"{slash}";
 
-            var trimmed = location.Trim();
+            var trimmed = location.Trim().ToLowerInvariant();
             if (!trimmed.StartsWith(slash)) trimmed = slash + trimmed;
             return trimmed.TrimEnd(slash);
         }
+
         public static IReadOnlyList<string> GetPrefixes(this string location)
         {
             if (string.IsNullOrEmpty(location)) throw new ArgumentNullException(nameof(location));
 
+            location = location.Trim().ToLowerInvariant();
             var parts = location.Split(new[] { slash }, StringSplitOptions.RemoveEmptyEntries);
             var prefixes = new List<string>();
             var sb = new StringBuilder();

@@ -1,6 +1,11 @@
 ﻿using System.Xml.Linq;
+using AdvertisingPlatforms.Domain.Entities;
+using AdvertisingPlatforms.Domain.Extensions;
+using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.Domain.Validators;
 using AdvertisingPlatforms.Parser;
 using AdvertisingPlatforms.Services;
+using AdvertisingPlatforms.Web.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,12 +18,16 @@ namespace AdvertisingPlatforms.Controllers
     [ApiController]
     public class AdvertisingPlatformsController : ControllerBase
     {
-        private readonly AdvertisingPlatformService _service;
+        private readonly IAdvertisingPlatformService _service;
+        private readonly IParser _parser;
         private readonly ILogger<AdvertisingPlatformsController> _logger;
 
-        public AdvertisingPlatformsController(AdvertisingPlatformService service, ILogger<AdvertisingPlatformsController> logger)
+        public AdvertisingPlatformsController(IAdvertisingPlatformService service, 
+            IParser parser,
+            ILogger<AdvertisingPlatformsController> logger)
         {
             _service = service;
+            _parser = parser;
             _logger = logger;
         }
 
@@ -33,36 +42,18 @@ namespace AdvertisingPlatforms.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public ActionResult<IReadOnlyList<string>> GetPlatformsByLocation([FromQuery] string location)
-        {
-            try
-            {
-                _logger.LogInformation("Search request for location: {Location}", location);
+        public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath, CancellationToken cancellationToken)
+        {   
+             var location = new Location(locationPath);
 
-                if (string.IsNullOrEmpty(location))
-                {
-                    _logger.LogWarning("Empty location search attempt");
-                    return BadRequest("Location cannot be null or empty.");
-                }
+             _logger.LogInformation("Search request for location: {Location}", location.Path);
 
-                var platforms = _service.Search(location);
+             var platforms = await _service.Search(location, cancellationToken);
 
-                if (!platforms.Any())
-                {
-                    _logger.LogInformation("No platforms found for location: {Location}", location);
-                    return NotFound("There are no available platforms for the specified location.");
-                }
+             _logger.LogInformation("Returning {Count} platforms for location: {Location}",
+             platforms.Count(), location.Path);
 
-                _logger.LogInformation("Returning {Count} platforms for location: {Location}",
-                platforms.Count(), location);
-
-                return Ok(platforms.Select(p => p.Name));
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error searching location: {Location}", location);
-                return BadRequest(ex.Message);
-            }
+             return Ok(platforms.Select(p => p.Name));
         }
 
         /// <summary>
@@ -74,68 +65,33 @@ namespace AdvertisingPlatforms.Controllers
         [HttpPost("upload")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult> UploadData(IFormFile file)
+        public async Task<ActionResult> UploadData(IFormFile file, CancellationToken cancellationToken)
         {
-            const string allowedContentType = "text/plain";
-            const string allowedExtension = ".txt";
-
             _logger.LogInformation("Starting file upload: {FileName}", file?.FileName);
 
-            if (file is null || file.Length == 0)
+            if (!file.IsValidTextFile(out var validationError))
             {
-                _logger.LogWarning("Empty file uploaded");
-                return BadRequest("File is required");
+                _logger.LogWarning("File validation failed: {Error}", validationError);
+                return BadRequest(validationError);
             }
 
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (fileExtension != allowedExtension)
+            await using var stream = new MemoryStream();
+            await file.CopyToAsync(stream);
+            stream.Position = 0;
+
+            _logger.LogDebug("Parsing file content");
+            var platforms = _parser.ParseFile(stream);
+
+            _logger.LogInformation("Uploading {Count} platforms", platforms.Count);
+            await _service.Upload(platforms, cancellationToken);
+
+            _logger.LogInformation("Data fron file {FileName} uploaded successfully.", file.FileName);
+            
+            return Ok(new
             {
-                _logger.LogWarning("Invalid file extension: {FileName}", file.FileName);
-                return BadRequest($"Only {allowedExtension} files are allowed");
-            }
-
-            if (!file.ContentType.Equals(allowedContentType, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogWarning("Invalid content type: {ContentType}", file.ContentType);
-                return BadRequest("Invalid file type");
-            }
-
-            try
-            {
-                await using var stream = new MemoryStream();
-                await file.CopyToAsync(stream);
-                stream.Position = 0;
-
-                _logger.LogDebug("Parsing file content");
-                var platforms = PlatformsFileParser.ParseFile(stream);
-
-                if (platforms.Count == 0)
-                {
-                    _logger.LogWarning("Empty file content: {FileName}", file.FileName);
-                    return BadRequest("The file is empty or contains incorrect data.");
-                }
-
-                _logger.LogInformation("Uploading {Count} platforms", platforms.Count);
-                _service.Upload(platforms);
-
-                _logger.LogInformation("Data fron file {FileName} uploaded successfully.", file.FileName);
-                return Ok(new
-                {
-                    Message = "Data uploaded successfully",
-                    PlatformsCount = platforms.Count
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing file {FileName}", file.FileName);
-                return BadRequest(new
-                {
-                    Error = "File processing error",
-                    ex.Message
-                });
-            }
-
+                Message = "Data uploaded successfully",
+                PlatformsCount = platforms.Count
+            });
         }
-
     }
 }

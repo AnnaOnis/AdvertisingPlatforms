@@ -1,4 +1,11 @@
+using AdvertisingPlatforms.DAL;
+using AdvertisingPlatforms.Domain.Entities;
+using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.Domain.Repositories;
+using AdvertisingPlatforms.Domain.Validators;
+using AdvertisingPlatforms.Parser;
 using AdvertisingPlatforms.Services;
+using AdvertisingPlatforms.Web.Extensions;
 
 namespace AdvertisingPlatforms
 {
@@ -8,28 +15,11 @@ namespace AdvertisingPlatforms
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddLogging(logging =>
-                            {
-                                logging.AddConsole();
-                                logging.AddDebug();
-                            });
-
-            builder.Services.AddControllers();
-
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            builder.Services.AddSingleton<AdvertisingPlatformService>();
-
+            builder.Services.AddApplicationServices();
 
             var app = builder.Build();
 
-            app.UseCors("AllowAll");
-
-            app.UseSwagger();
-            app.UseSwaggerUI();
-
-            app.MapControllers();
+            app.UseApplicationMiddleware();
 
             app.Run();
         }

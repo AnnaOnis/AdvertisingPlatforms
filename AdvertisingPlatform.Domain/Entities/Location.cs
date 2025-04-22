@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AdvertisingPlatforms.Domain.Extensions;
 using AdvertisingPlatforms.Domain.Interfaces;
 
 namespace AdvertisingPlatforms.Domain.Entities
@@ -31,7 +32,7 @@ namespace AdvertisingPlatforms.Domain.Entities
         public Location(string path)
         {
             Id = Guid.NewGuid();
-            Path = path;
+            Path = path.NormalizeLocationPath();
         }
     }
 }

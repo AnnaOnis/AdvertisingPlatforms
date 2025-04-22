@@ -18,13 +18,11 @@ namespace AdvertisingPlatforms.Domain.Extensions
             if (line.Count(c => c == ':') != 1)
                 throw new LineValidationException(lineNumber, "Invalid format - missing colon separator");
         }
-
         public static void ValidatePlatformName(this string platformName, int lineNumber)
         {
             if(string.IsNullOrWhiteSpace(platformName))
                 throw new LineValidationException(lineNumber, "Platform name cannot be empty");
         }
-
         public static void ValidateLocation(this string location, int lineNumber)
         {
             if (string.IsNullOrWhiteSpace(location))
