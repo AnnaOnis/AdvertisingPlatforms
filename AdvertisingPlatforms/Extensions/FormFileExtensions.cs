@@ -2,8 +2,8 @@
 {
     public static class FormFileExtensions
     {
-        private const string allowedContentType = "text/plain";
-        private const string allowedExtension = ".txt";
+        private const string _AllowedContentType = "text/plain";
+        private const string _AllowedExtension = ".txt";
         public static bool IsValidTextFile(this IFormFile? file, out string errorMessage)
         {
             errorMessage = "";
@@ -15,13 +15,13 @@
             }
 
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (extension != allowedExtension)
+            if (extension != _AllowedExtension)
             {
                 errorMessage = "Only .txt files are allowed";
                 return false;
             }
 
-            if (!file.ContentType.Equals(allowedContentType, StringComparison.OrdinalIgnoreCase))
+            if (!file.ContentType.Equals(_AllowedContentType, StringComparison.OrdinalIgnoreCase))
             {
                 errorMessage = "Invalid file type";
                 return false;

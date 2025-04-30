@@ -44,7 +44,7 @@ namespace AdvertisingPlatforms.Web.Filters
                 DomainValidationException domainValidationEx =>
                     (StatusCodes.Status400BadRequest, domainValidationEx.Type, domainValidationEx.Message),
                 DomainException domainEx =>
-                    (StatusCodes.Status500InternalServerError, domainEx.Type, domainEx.Message),
+                    (StatusCodes.Status400BadRequest, domainEx.Type, domainEx.Message),
                 _ =>
                     (StatusCodes.Status500InternalServerError, "SERVER_ERROR", "Internal server error")
             };

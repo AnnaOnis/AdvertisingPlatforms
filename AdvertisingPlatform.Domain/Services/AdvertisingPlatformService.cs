@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using AdvertisingPlatforms.Domain.Interfaces;
 using AdvertisingPlatforms.Domain.Extensions;
 using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Repositories;
+using AdvertisingPlatforms.Domain.Abstractions;
 
 namespace AdvertisingPlatforms.Services
 {

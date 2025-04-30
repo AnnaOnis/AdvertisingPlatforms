@@ -1,11 +1,4 @@
-using AdvertisingPlatforms.DAL;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Interfaces;
-using AdvertisingPlatforms.Domain.Repositories;
-using AdvertisingPlatforms.Domain.Validators;
-using AdvertisingPlatforms.Parser;
-using AdvertisingPlatforms.Services;
-using AdvertisingPlatforms.Web.Extensions;
+using AdvertisingPlatforms.Web.ServiceConfigurations;
 
 namespace AdvertisingPlatforms
 {
@@ -15,11 +8,11 @@ namespace AdvertisingPlatforms
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddApplicationServices();
+            builder.Services.ConfigureApplicationServices();
 
             var app = builder.Build();
 
-            app.UseApplicationMiddleware();
+            app.ConfigureApplicationMiddleware();
 
             app.Run();
         }

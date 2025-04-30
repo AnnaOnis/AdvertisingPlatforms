@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 using AdvertisingPlatforms.Domain.Entities;
 using AdvertisingPlatforms.Domain.Interfaces;
 
-namespace AdvertisingPlatforms.Domain.Repositories
+namespace AdvertisingPlatforms.Domain.Abstractions
 {
     /// <summary>
     /// Репозиторий для работы с рекламными платформами
     /// </summary>
     public interface IAdvertisingPlatformRepository
-    {   
+    {
         /// <summary>
         /// Находит рекламные платформы по указанному местоположению
         /// </summary>
@@ -20,7 +20,7 @@ namespace AdvertisingPlatforms.Domain.Repositories
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>Список рекламных платформ в указанном местоположении</returns>
         Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken);
-        
+
         /// <summary>
         /// Сохраняет список рекламных платформ
         /// </summary>
