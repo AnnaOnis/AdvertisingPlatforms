@@ -4,6 +4,7 @@
     {
         private const string _AllowedContentType = "text/plain";
         private const string _AllowedExtension = ".txt";
+
         public static bool IsValidTextFile(this IFormFile? file, out string errorMessage)
         {
             errorMessage = "";

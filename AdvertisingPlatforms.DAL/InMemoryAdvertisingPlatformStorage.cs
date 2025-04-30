@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace AdvertisingPlatforms.DAL
 {
     /// <summary>
-    /// Класс для хранения рекламных платформ в памяти с группировкой по локациям
+    /// In-memory storage for advertising platforms with location-based grouping
     /// </summary>
     public class InMemoryAdvertisingPlatformStorage
     {
@@ -22,11 +22,11 @@ namespace AdvertisingPlatforms.DAL
         }
 
         /// <summary>
-        /// Cохраняет коллекцию рекламных платформ в памяти
+        /// Stores a collection of advertising platforms in memory
         /// </summary>
-        /// <param name="platformsToStore">Коллекция рекламных платформ для сохранения</param>
-        /// <param name="cancellationToken">Токен отмены операции</param>
-        /// <exception cref="ArgumentNullException">Выбрасывается при передаче null коллекции</exception>
+        /// <param name="platformsToStore">Collection of advertising platforms to store</param>
+        /// <param name="cancellationToken">Operation cancellation token</param>
+        /// <exception cref="ArgumentNullException">Thrown when null collection is provided</exception>
         public Task StoreAdvertisingPlatforms(IReadOnlyList<AdvertisingPlatform> platformsToStore, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting data upload...");
@@ -99,12 +99,12 @@ namespace AdvertisingPlatforms.DAL
         }
 
         /// <summary>
-        /// Получает рекламные платформы по указанной локации
+        /// Retrieves advertising platforms by specified location
         /// </summary>
-        /// <param name="targetLocation">Локация для поиска платформ</param>
-        /// <param name="cancellationToken">Токен отмены операции</param>
-        /// <returns>Коллекция найденных рекламных платформ</returns>
-        /// <exception cref="ArgumentNullException">Выбрасывается при передаче null локации</exception>
+        /// <param name="targetLocation">Location to search platforms for</param>
+        /// <param name="cancellationToken">Operation cancellation token</param>
+        /// <returns>Collection of found advertising platforms</returns>
+        /// <exception cref="ArgumentNullException">Thrown when null location is provided</exception>
         public Task<IReadOnlyCollection<AdvertisingPlatform>> FindPlatformsByLocation(Location targetLocation, CancellationToken cancellationToken)
         {
             _logger.LogDebug("Searching for location: {Location}", targetLocation);

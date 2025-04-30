@@ -7,25 +7,25 @@ using System.Threading.Tasks;
 namespace AdvertisingPlatforms.Domain.Interfaces
 {
     /// <summary>
-    /// Валидатор сущностей
+    /// Entity validator
     /// </summary>
-    /// <typeparam name="TEntity">Тип сущности для валидации</typeparam>
+    /// <typeparam name="TEntity">Entity type to validate</typeparam>
     public interface IValidator<TEntity> where TEntity : class, IEntity
     {
         /// <summary>
-        /// Выполняет валидацию одиночной сущности
+        /// Validates a single entity
         /// </summary>
-        /// <param name="entity">Проверяемая сущность</param>
-        /// <exception cref="ArgumentNullException">Генерируется если сущность равна null</exception>
-        /// <exception cref="DomainValidationException">Генерируется при нарушении бизнес-правил</exception>
+        /// <param name="entity">Entity to validate</param>
+        /// <exception cref="ArgumentNullException">Thrown when entity is null</exception>
+        /// <exception cref="DomainValidationException">Thrown when business rules are violated</exception>
         void Validate(TEntity? entity);
 
         /// <summary>
-        /// Выполняет валидацию коллекции сущностей
+        /// Validates a collection of entities
         /// </summary>
-        /// <param name="entity">Коллекция для проверки</param>
-        /// <exception cref="ArgumentNullException">Генерируется если коллекция равна null</exception>
-        /// <exception cref="DomainValidationException">Генерируется при нарушении бизнес-правил</exception>
+        /// <param name="entity">Collection to validate</param>
+        /// <exception cref="ArgumentNullException">Thrown when collection is null</exception>
+        /// <exception cref="DomainValidationException">Thrown when business rules are violated</exception>
         void Validate(IEnumerable<TEntity>? entity);
     }
 }

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AdvertisingPlatforms.Controllers
 {
     /// <summary>
-    /// Контроллер для работы с рекламными площадками
+    /// Controller for working with advertising platforms
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
@@ -32,16 +32,14 @@ namespace AdvertisingPlatforms.Controllers
         }
 
         /// <summary>
-        /// Поиск площадок по локации
+        /// Search platforms by location
         /// </summary>
-        /// <param name="location">Локация в формате /регион/город</param>
-        /// <response code="200">Успешный ответ</response>
-        /// <response code="400">Некорректная локация</response>
-        /// <response code="404">Площадки не найдены</response>
+        /// <param name="locationPath">Location in /region/city format</param>
+        /// <response code="200">Success response</response>
+        /// <response code="400">Invalid location format</response>
         [HttpGet("search")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath, CancellationToken cancellationToken)
         {   
              var location = new Location(locationPath);
@@ -57,11 +55,11 @@ namespace AdvertisingPlatforms.Controllers
         }
 
         /// <summary>
-        /// Загрузка данных о площадках из файла
+        /// Upload platform data from file
         /// </summary>
-        /// <param name="file">Текстовый файл в формате .txt</param>
-        /// <response code="200">Данные успешно загружены</response>
-        /// <response code="400">Некорректный файл</response>
+        /// <param name="file">Text file in .txt format</param>
+        /// <response code="200">Data uploaded successfully</response>
+        /// <response code="400">Invalid file format</response>
         [HttpPost("upload")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]

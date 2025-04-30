@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace AdvertisingPlatforms.Domain.Interfaces
 {
     /// <summary>
-    /// Интерфейс для всех сущностей с уникальным идентификатором.
+    /// Interface for all entities with unique identifier
     /// </summary>
     public interface IEntity
     {

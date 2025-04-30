@@ -9,23 +9,23 @@ using AdvertisingPlatforms.Domain.Interfaces;
 namespace AdvertisingPlatforms.Domain.Abstractions
 {
     /// <summary>
-    /// Репозиторий для работы с рекламными платформами
+    /// Repository for working with advertising platforms
     /// </summary>
     public interface IAdvertisingPlatformRepository
     {
         /// <summary>
-        /// Находит рекламные платформы по указанному местоположению
+        /// Finds advertising platforms by specified location
         /// </summary>
-        /// <param name="location">Географическое местоположение для поиска</param>
-        /// <param name="cancellationToken">Токен отмены операции</param>
-        /// <returns>Список рекламных платформ в указанном местоположении</returns>
+        /// <param name="location">Geographic location to search</param>
+        /// <param name="cancellationToken">Operation cancellation token</param>
+        /// <returns>List of advertising platforms in the specified location</returns>
         Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Сохраняет список рекламных платформ
+        /// Saves a list of advertising platforms
         /// </summary>
-        /// <param name="platforms">Список платформ для сохранения</param>
-        /// <param name="cancellationToken">Токен отмены операции</param>
+        /// <param name="platforms">List of platforms to save</param>
+        /// <param name="cancellationToken">Operation cancellation token</param>
         Task Save(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken);
     }
 }

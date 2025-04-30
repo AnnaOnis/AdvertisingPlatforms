@@ -9,26 +9,25 @@ using AdvertisingPlatforms.Domain.Interfaces;
 namespace AdvertisingPlatforms.Domain.Entities
 {
     /// <summary>
-    /// Представляет локацию для рекламной площадки.
+    /// Represents a location for an advertising platform
     /// </summary>
     public class Location : IEntity
     {
         /// <summary>
-        /// Уникальный идентификатор локации.
+        /// Unique location identifier
         /// </summary>
         public Guid Id { get; init; }
 
         /// <summary>
-        /// Название локации
+        /// Location path
         /// </summary>
         public string Path { get; init; }
 
         /// <summary>
-        /// Создает новый экземпляр локации
+        /// Creates a new location instance
         /// </summary>
-        /// <param name="id">Уникальный идентификатор локации</param>
-        /// <param name="name">Название локации (не может быть пустым)</param>
-        /// <exception cref="ArgumentException">Выбрасывается при невалидных аргументах</exception>
+        /// <param name="path">Location path (cannot be empty)</param>
+        /// <exception cref="ArgumentException">Thrown for invalid arguments</exception>
         public Location(string path)
         {
             Id = Guid.NewGuid();

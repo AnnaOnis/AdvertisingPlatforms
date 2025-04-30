@@ -2,31 +2,31 @@
 
 namespace AdvertisingPlatforms.Domain.Entities
 {
-    /// <summary>
-    /// Представляет рекламную площадку с набором локаций
-    /// </summary>
+/// <summary>
+/// Represents an advertising platform with a set of locations
+/// </summary>
     public class AdvertisingPlatform : IEntity
     {
         /// <summary>
-        /// Уникальный идентификатор платформы.
+        /// Unique platform identifier
         /// </summary>
         public Guid Id { get; init; }
 
         /// <summary>
-        /// Название рекламной площадки
+        /// Name of the advertising platform
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// Массив локаций, где действует площадка
+        /// Collection of locations where the platform operates
         /// </summary>
         public IReadOnlyCollection<Location> Locations { get; set; }
 
         /// <summary>
-        /// Создает новый экземпляр рекламной площадки
+        /// Creates a new instance of an advertising platform
         /// </summary>
-        /// <param name="name">Название площадки (не может быть пустым)</param>
-        /// <param name="locations">Массив локаций (минимум одна локация)</param>
+        /// <param name="name">Platform name (cannot be empty)</param>
+        /// <param name="locations">Array of locations (minimum one location required)</param>
         public AdvertisingPlatform( string name, IReadOnlyList<Location> locations) 
         {
             Id = Guid.NewGuid();

@@ -8,15 +8,15 @@ using AdvertisingPlatforms.Domain.Entities;
 namespace AdvertisingPlatforms.Domain.Interfaces
 {
     /// <summary>
-    /// Парсер текстовых файлов с рекламными площадками
+    /// Parser for text files containing advertising platforms
     /// </summary>
     public interface IAdvertisingPlatformParser
     {
         /// <summary>
-        /// Парсит поток данных с информацией о площадках
+        /// Parses a data stream containing platform information
         /// </summary>
-        /// <param name="stream">Поток данных с текстовой информацией</param>
-        /// <returns>Список распарсенных площадок</returns>
+        /// <param name="stream">Data stream with text information</param>
+        /// <returns>List of parsed platforms</returns>
         IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream);
     }
 }
