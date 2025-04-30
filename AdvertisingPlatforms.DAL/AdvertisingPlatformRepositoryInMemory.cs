@@ -10,21 +10,21 @@ namespace AdvertisingPlatforms.DAL
 {
     public class AdvertisingPlatformRepositoryInMemory : IAdvertisingPlatformRepository
     {
-        private readonly InMemoryData _data;
+        private readonly InMemoryAdvertisingPlatformStorage _storage;
 
-        public AdvertisingPlatformRepositoryInMemory(InMemoryData data)
+        public AdvertisingPlatformRepositoryInMemory(InMemoryAdvertisingPlatformStorage storage)
         {
-            _data = data;
+            _storage = storage;
         }
 
-        public Task<IReadOnlyList<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken)
+        public Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken)
         {
-            return _data.GetDataByLocation(location, cancellationToken);
+            return _storage.FindPlatformsByLocation(location, cancellationToken);
         }
 
         public Task Save(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken)
         {
-            return _data.SaveData(platforms, cancellationToken);
+            return _storage.StoreAdvertisingPlatforms(platforms, cancellationToken);
         }
     }
 }

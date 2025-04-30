@@ -8,8 +8,6 @@ namespace AdvertisingPlatforms.Domain.Exceptions.Validation
 {
     public class LocationValidationException : DomainValidationException
     {
-        public LocationValidationException() { }
-
         public LocationValidationException(string message) : base(message) { }
 
         public LocationValidationException(string? message, Exception? innerException) : base(message, innerException) { }

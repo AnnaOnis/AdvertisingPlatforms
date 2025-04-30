@@ -10,7 +10,7 @@ namespace AdvertisingPlatforms.Domain.Interfaces
     /// <summary>
     /// Парсер текстовых файлов с рекламными площадками
     /// </summary>
-    public interface IParser
+    public interface IAdvertisingPlatformParser
     {
         /// <summary>
         /// Парсит поток данных с информацией о площадках

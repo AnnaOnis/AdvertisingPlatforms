@@ -3,7 +3,6 @@
     [Serializable]
     public class DomainValidationException : DomainException
     {
-        public DomainValidationException() { }
 
         public DomainValidationException(string? message) : base(message, "VALIDATION_ERROR") { }
 

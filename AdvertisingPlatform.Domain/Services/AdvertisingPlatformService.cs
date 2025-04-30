@@ -12,7 +12,7 @@ namespace AdvertisingPlatforms.Services
         private readonly ILogger<AdvertisingPlatformService> _logger;
         private readonly IValidator<AdvertisingPlatform> _validatorPlatform;
         private readonly IValidator<Location> _validatorLocation;
-        private readonly IAdvertisingPlatformRepository _repository;
+        private readonly IAdvertisingPlatformRepository _platformRepository;
 
         public AdvertisingPlatformService(ILogger<AdvertisingPlatformService> logger, 
             IValidator<AdvertisingPlatform> validatorPlatform, 
@@ -22,13 +22,13 @@ namespace AdvertisingPlatforms.Services
             _logger = logger;
             _validatorPlatform = validatorPlatform;
             _validatorLocation = validatorLocation;
-            _repository = repository;
+            _platformRepository = repository;
         }
 
-        public async Task<IReadOnlyList<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken)
         {
             _validatorLocation.Validate(location);
-            var platforms = await _repository.FindByLocation(location, cancellationToken);
+            var platforms = await _platformRepository.FindByLocation(location, cancellationToken);
             return platforms;
         }
 
@@ -39,7 +39,7 @@ namespace AdvertisingPlatforms.Services
             {
                 _validatorLocation.Validate(platform.Locations);
             }
-            await _repository.Save(platforms, cancellationToken);
+            await _platformRepository.Save(platforms, cancellationToken);
         }
     }
 }

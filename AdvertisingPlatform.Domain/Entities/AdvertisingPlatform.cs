@@ -20,14 +20,14 @@ namespace AdvertisingPlatforms.Domain.Entities
         /// <summary>
         /// Массив локаций, где действует площадка
         /// </summary>
-        public IEnumerable<Location> Locations { get; set; }
+        public IReadOnlyCollection<Location> Locations { get; set; }
 
         /// <summary>
         /// Создает новый экземпляр рекламной площадки
         /// </summary>
         /// <param name="name">Название площадки (не может быть пустым)</param>
         /// <param name="locations">Массив локаций (минимум одна локация)</param>
-        public AdvertisingPlatform( string name, IEnumerable<Location> locations) 
+        public AdvertisingPlatform( string name, IReadOnlyList<Location> locations) 
         {
             Id = Guid.NewGuid();
             Name = name;

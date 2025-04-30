@@ -9,7 +9,6 @@ namespace AdvertisingPlatforms.Domain.Exceptions
     public class DomainException : Exception
     {
         public string Type { get; } = "DOMAIN_ERROR";
-        public DomainException() { }
         public DomainException(string? message, string type) : base(message) 
         { 
             Type = type;

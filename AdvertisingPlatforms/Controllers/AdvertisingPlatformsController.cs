@@ -18,16 +18,16 @@ namespace AdvertisingPlatforms.Controllers
     [ApiController]
     public class AdvertisingPlatformsController : ControllerBase
     {
-        private readonly IAdvertisingPlatformService _service;
-        private readonly IParser _parser;
+        private readonly IAdvertisingPlatformService _advertisingPlatformService;
+        private readonly IAdvertisingPlatformParser _advertisingPlatformParser;
         private readonly ILogger<AdvertisingPlatformsController> _logger;
 
         public AdvertisingPlatformsController(IAdvertisingPlatformService service, 
-            IParser parser,
+            IAdvertisingPlatformParser parser,
             ILogger<AdvertisingPlatformsController> logger)
         {
-            _service = service;
-            _parser = parser;
+            _advertisingPlatformService = service;
+            _advertisingPlatformParser = parser;
             _logger = logger;
         }
 
@@ -48,7 +48,7 @@ namespace AdvertisingPlatforms.Controllers
 
              _logger.LogInformation("Search request for location: {Location}", location.Path);
 
-             var platforms = await _service.Search(location, cancellationToken);
+             var platforms = await _advertisingPlatformService.Search(location, cancellationToken);
 
              _logger.LogInformation("Returning {Count} platforms for location: {Location}",
              platforms.Count(), location.Path);
@@ -80,10 +80,10 @@ namespace AdvertisingPlatforms.Controllers
             stream.Position = 0;
 
             _logger.LogDebug("Parsing file content");
-            var platforms = _parser.ParseFile(stream);
+            var platforms = _advertisingPlatformParser.ParseFile(stream);
 
             _logger.LogInformation("Uploading {Count} platforms", platforms.Count);
-            await _service.Upload(platforms, cancellationToken);
+            await _advertisingPlatformService.Upload(platforms, cancellationToken);
 
             _logger.LogInformation("Data fron file {FileName} uploaded successfully.", file.FileName);
             

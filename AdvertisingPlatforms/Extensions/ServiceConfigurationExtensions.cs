@@ -23,11 +23,11 @@ namespace AdvertisingPlatforms.Web.Extensions
             services.AddSwaggerGen();
 
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
-            services.AddSingleton<IParser, PlatformsFileParser>();
+            services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
             services.AddScoped<IValidator<Location>, LocationValidator>();
             services.AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>();
             services.AddScoped<IAdvertisingPlatformRepository, AdvertisingPlatformRepositoryInMemory>();
-            services.AddSingleton<InMemoryData>();
+            services.AddSingleton<InMemoryAdvertisingPlatformStorage>();
 
             return services;
         }

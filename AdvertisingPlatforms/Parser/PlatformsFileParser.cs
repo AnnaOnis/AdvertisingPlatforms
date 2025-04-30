@@ -8,10 +8,10 @@ using AdvertisingPlatforms.Domain.Interfaces;
 namespace AdvertisingPlatforms.Parser
 {
 
-    public class PlatformsFileParser : IParser
+    public class PlatformsFileParser : IAdvertisingPlatformParser
     {
-        private const char _separatorColon = ':';
-        private const char _separatorComma = ',';
+        private const char _SeparatorColon = ':';
+        private const char _SeparatorComma = ',';
 
         private readonly ILogger<PlatformsFileParser> _logger;
 
@@ -38,11 +38,11 @@ namespace AdvertisingPlatforms.Parser
         {
             line.ValidateContentLine(lineNumber);
 
-            var parts = line.Split(_separatorColon);
+            var parts = line.Split(_SeparatorColon);
             var name = parts[0].Trim();
             name.ValidatePlatformName(lineNumber);
 
-            var locations = parts[1].Split(_separatorComma)
+            var locations = parts[1].Split(_SeparatorComma)
                 .Select(l => l.Trim())
                 .Where(l => !string.IsNullOrEmpty(l))
                 .Select(l =>

@@ -19,7 +19,7 @@ namespace AdvertisingPlatforms.Domain.Repositories
         /// <param name="location">Географическое местоположение для поиска</param>
         /// <param name="cancellationToken">Токен отмены операции</param>
         /// <returns>Список рекламных платформ в указанном местоположении</returns>
-        Task<IReadOnlyList<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(Location location, CancellationToken cancellationToken);
         
         /// <summary>
         /// Сохраняет список рекламных платформ

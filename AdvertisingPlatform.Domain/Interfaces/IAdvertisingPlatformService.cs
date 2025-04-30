@@ -22,6 +22,6 @@ namespace AdvertisingPlatforms.Domain.Interfaces
         /// <param name="location">Целевая локация</param>
         /// <param name="cancellationToken">Токен для отслеживания запросов на отмену</param>
         /// <returns>Коллекция подходящих площадок</returns>
-        Task<IReadOnlyList<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken);
     }
 }
