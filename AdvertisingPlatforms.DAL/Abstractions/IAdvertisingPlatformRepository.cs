@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Interfaces;
+﻿using AdvertisingPlatforms.Domain.Entities;
 
 namespace AdvertisingPlatforms.Domain.Abstractions
 {

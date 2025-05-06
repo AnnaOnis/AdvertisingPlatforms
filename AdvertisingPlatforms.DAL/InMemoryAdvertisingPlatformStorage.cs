@@ -49,7 +49,7 @@ namespace AdvertisingPlatforms.DAL
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing platform {PlatformName}", platform.Name);
+                    _logger.LogError(ex, "Error processing platform {PlatformName}", platform.Advertisement.Name);
                 }
 
             }

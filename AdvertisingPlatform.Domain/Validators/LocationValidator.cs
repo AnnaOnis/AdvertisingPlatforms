@@ -1,5 +1,5 @@
 ﻿using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Exceptions.Validation;
+using AdvertisingPlatforms.Domain.Exceptions;
 using AdvertisingPlatforms.Domain.Interfaces;
 
 namespace AdvertisingPlatforms.Domain.Validators
@@ -12,7 +12,7 @@ namespace AdvertisingPlatforms.Domain.Validators
                 throw new ArgumentNullException(nameof(location));
 
             if (string.IsNullOrWhiteSpace(location.Path))
-                throw new LocationValidationException($"Location path cannot be empty");
+                throw new DomainValidationException($"Location path cannot be empty");
         }
 
         public void Validate(IEnumerable<Location>? locations)

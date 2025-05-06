@@ -1,4 +1,4 @@
-﻿namespace AdvertisingPlatforms.Domain.Exceptions.Validation
+﻿namespace AdvertisingPlatforms.Domain.Exceptions
 {
     [Serializable]
     public class DomainValidationException : DomainException

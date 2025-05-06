@@ -1,10 +1,10 @@
-﻿using AdvertisingPlatforms.Domain.Interfaces;
+﻿using AdvertisingPlatforms.DAL.Abstractions;
 
 namespace AdvertisingPlatforms.Domain.Entities
 {
-/// <summary>
-/// Represents an advertising platform with a set of locations
-/// </summary>
+    /// <summary>
+    /// Represents an advertising platform with a set of locations
+    /// </summary>
     public class AdvertisingPlatform : IEntity
     {
         /// <summary>
@@ -13,9 +13,9 @@ namespace AdvertisingPlatforms.Domain.Entities
         public Guid Id { get; init; }
 
         /// <summary>
-        /// Name of the advertising platform
+        /// Advertisement of the platform
         /// </summary>
-        public string Name { get; set; }
+        public Advertisement Advertisement { get; set; }
 
         /// <summary>
         /// Collection of locations where the platform operates
@@ -27,10 +27,10 @@ namespace AdvertisingPlatforms.Domain.Entities
         /// </summary>
         /// <param name="name">Platform name (cannot be empty)</param>
         /// <param name="locations">Array of locations (minimum one location required)</param>
-        public AdvertisingPlatform( string name, IReadOnlyList<Location> locations) 
+        public AdvertisingPlatform(Advertisement advertisement, IReadOnlyList<Location> locations) 
         {
             Id = Guid.NewGuid();
-            Name = name;
+            Advertisement = advertisement;
             Locations = locations;
         }
     }

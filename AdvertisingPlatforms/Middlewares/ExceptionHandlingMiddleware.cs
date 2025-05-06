@@ -2,7 +2,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using AdvertisingPlatforms.Domain.Exceptions;
-using AdvertisingPlatforms.Domain.Exceptions.Validation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;

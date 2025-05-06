@@ -1,32 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using AdvertisingPlatforms.Domain.Exceptions.Validation;
+﻿using AdvertisingPlatforms.Domain.Exceptions;
 
 namespace AdvertisingPlatforms.Domain.Extensions
 {
     public static class ValidationTextDataExtensions
     {
-        public static void ValidateContentLine(this string line, int lineNumber)
+        public static void ValidateContentLine(this string line)
         {
             if (string.IsNullOrWhiteSpace(line))
-                throw new LineValidationException(lineNumber, "Empty line");
+                throw new DomainValidationException("Empty line");
 
             if (line.Count(c => c == ':') != 1)
-                throw new LineValidationException(lineNumber, "Invalid format - missing colon separator");
+                throw new DomainValidationException("Invalid format - missing colon separator");
         }
-        public static void ValidatePlatformName(this string platformName, int lineNumber)
+        public static void ValidatePlatformName(this string platformName)
         {
             if(string.IsNullOrWhiteSpace(platformName))
-                throw new LineValidationException(lineNumber, "Platform name cannot be empty");
+                throw new DomainValidationException("Platform name cannot be empty");
         }
-        public static void ValidateLocation(this string location, int lineNumber)
+        public static void ValidateLocation(this string location)
         {
             if (string.IsNullOrWhiteSpace(location))
-                throw new LineValidationException(lineNumber, "Location cannot be empty");
+                throw new DomainValidationException("Location cannot be empty");
         }
     }
 }

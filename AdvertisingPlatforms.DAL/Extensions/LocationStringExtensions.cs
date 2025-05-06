@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AdvertisingPlatforms.Services;
+﻿using System.Text;
 
 namespace AdvertisingPlatforms.Domain.Extensions
 {

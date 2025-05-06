@@ -51,7 +51,7 @@ namespace AdvertisingPlatforms.Controllers
              _logger.LogInformation("Returning {Count} platforms for location: {Location}",
              platforms.Count(), location.Path);
 
-             return Ok(platforms.Select(p => p.Name));
+             return Ok(platforms.Select(p => p.Advertisement.Name));
         }
 
         /// <summary>

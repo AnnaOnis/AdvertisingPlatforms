@@ -1,6 +1,4 @@
-﻿
-
-using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.Domain.Entities;
 
 namespace AdvertisingPlatforms.Domain.Interfaces
 {
