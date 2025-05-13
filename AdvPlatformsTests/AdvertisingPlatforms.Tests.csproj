@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AdvertisingPlatforms\AdvertisingPlatforms.csproj" />
+    <ProjectReference Include="..\AdvertisingPlatforms\AdvertisingPlatforms.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>
