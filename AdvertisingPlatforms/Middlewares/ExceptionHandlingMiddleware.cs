@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using AdvertisingPlatforms.Domain.Exceptions;
+using AdvertisingPlatforms.Base.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Extensions;

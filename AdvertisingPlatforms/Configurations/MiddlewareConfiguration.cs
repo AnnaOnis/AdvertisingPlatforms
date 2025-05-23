@@ -1,10 +1,10 @@
 ﻿using AdvertisingPlatforms.Web.Middlewares;
 
-namespace AdvertisingPlatforms.Web.ServiceConfigurations
+namespace AdvertisingPlatforms.Web.Configurations
 {
-    public static class MiddlewareConfigurationExtensions
+    public static class MiddlewareConfiguration
     {
-        public static IApplicationBuilder ConfigureApplicationMiddleware(this WebApplication app)
+        public static void ConfigureApplicationMiddleware(this WebApplication app)
         {
             app.UseCors("AllowAll");
 
@@ -14,7 +14,6 @@ namespace AdvertisingPlatforms.Web.ServiceConfigurations
 
             ConfigureControllers(app);
 
-            return app;
         }
 
         private static void ConfigureMiddleware(IApplicationBuilder app)

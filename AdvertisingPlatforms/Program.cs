@@ -1,4 +1,4 @@
-using AdvertisingPlatforms.Web.ServiceConfigurations;
+using AdvertisingPlatforms.Web.Configurations;
 
 namespace AdvertisingPlatforms
 {

@@ -1,6 +1,6 @@
-﻿using AdvertisingPlatforms.Domain.Exceptions;
+﻿using AdvertisingPlatforms.Base.Exceptions;
 
-namespace AdvertisingPlatforms.Domain.Extensions
+namespace AdvertisingPlatforms.Base.Extensions
 {
     public static class ValidationTextDataExtensions
     {

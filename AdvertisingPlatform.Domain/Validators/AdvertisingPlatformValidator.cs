@@ -1,6 +1,7 @@
 ﻿using AdvertisingPlatforms.DAL.Entities;
-using AdvertisingPlatforms.Domain.Exceptions;
+using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Domain.Abstractions;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Domain.Validators
 {
@@ -9,10 +10,10 @@ namespace AdvertisingPlatforms.Domain.Validators
         public void Validate(IEnumerable<AdvertisingPlatform>? platforms)
         {
             if (platforms == null)
-                throw new ArgumentNullException(nameof(platforms));
+                throw new ArgumentNullException(ErrorMessages.NULL_PLATFORMS_COLLECTION, nameof(platforms));
 
             if (!platforms.Any())
-                throw new DomainValidationException("Collection of platforms cannot be empty");
+                throw new DomainValidationException(ErrorMessages.EMPTY_PLATFORMS_COLLECTION);
 
             foreach (var platform in platforms)
             {
@@ -25,10 +26,10 @@ namespace AdvertisingPlatforms.Domain.Validators
                 throw new ArgumentNullException(nameof(platform));
 
             if (string.IsNullOrWhiteSpace(platform.Advertisement.Name))
-                throw new DomainValidationException($"Platform name cannot be empty (Platform: {platform.Advertisement.Name})");
+                throw new DomainValidationException(ErrorMessages.EMPTY_PLATFORM_NAME);
 
             if (!platform.Locations.Any())
-                throw new DomainValidationException($"Platform must have at least one location (Platform: {platform.Advertisement.Name})");
+                throw new DomainValidationException( ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
         }
     }
 }

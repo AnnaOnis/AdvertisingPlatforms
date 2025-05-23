@@ -2,6 +2,7 @@
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.DAL.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -38,11 +39,11 @@ namespace AdvertisingPlatforms.Web.Controllers
         {   
              var location = new Location(locationPath);
 
-             _logger.LogInformation("Search request for location: {Location}", location.Path);
+             _logger.LogInformation(LogMessages.SEARCH_REQUEST_FOR_LOCATION, location.Path);
 
              var platforms = await _advertisingPlatformService.Search(location, cancellationToken);
 
-             _logger.LogInformation("Returning {Count} platforms for location: {Location}",
+             _logger.LogInformation(LogMessages.RETURNING_PLATFORMS_FOR_LOCATION,
              platforms.Count(), location.Path);
 
              return Ok(platforms.Select(p => p.Advertisement.Name));
@@ -59,29 +60,27 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult> UploadData(IFormFile file, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting file upload: {FileName}", file?.FileName);
+            _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, file?.FileName);
 
             if (!file.IsValidTextFile(out var validationError))
             {
-                _logger.LogWarning("File validation failed: {Error}", validationError);
+                _logger.LogWarning(ErrorMessages.FILE_VALIDATION_FAILED, validationError);
                 return BadRequest(validationError);
             }
 
-            await using var stream = new MemoryStream();
-            await file.CopyToAsync(stream);
-            stream.Position = 0;
+            await using var stream = await file.FileToMemoryStreamAsync(cancellationToken);
 
-            _logger.LogDebug("Parsing file content");
+            _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
             var platforms = _advertisingPlatformParser.ParseFile(stream);
 
-            _logger.LogInformation("Uploading {Count} platforms", platforms.Count);
+            _logger.LogInformation(LogMessages.UPLOADING_PLATFORMS, platforms.Count);
             await _advertisingPlatformService.Upload(platforms, cancellationToken);
 
-            _logger.LogInformation("Data fron file {FileName} uploaded successfully.", file.FileName);
+            _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
             
             return Ok(new
             {
-                Message = "Data uploaded successfully",
+                Message = LogMessages.DATA_UPLOADED_SUCCESSFULLY,
                 PlatformsCount = platforms.Count
             });
         }

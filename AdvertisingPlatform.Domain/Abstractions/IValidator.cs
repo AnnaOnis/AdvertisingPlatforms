@@ -1,5 +1,5 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
-using AdvertisingPlatforms.Domain.Exceptions;
+using AdvertisingPlatforms.Base.Exceptions;
 
 namespace AdvertisingPlatforms.Domain.Abstractions
 {

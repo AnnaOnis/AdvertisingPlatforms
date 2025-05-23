@@ -1,18 +1,17 @@
 ﻿using System.Text;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.DAL.Extensions
 {
     public static class LocationStringExtensions
     {
-        private const char slash = '/';
-
         public static string NormalizeLocationPath(this string location)
         {
-            if (string.IsNullOrEmpty(location)) return $"{slash}";
+            if (string.IsNullOrEmpty(location)) return $"{TextSeparators.SLASH}";
 
             var trimmed = location.Trim().ToLowerInvariant();
-            if (!trimmed.StartsWith(slash)) trimmed = slash + trimmed;
-            return trimmed.TrimEnd(slash);
+            if (!trimmed.StartsWith(TextSeparators.SLASH)) trimmed = TextSeparators.SLASH + trimmed;
+            return trimmed.TrimEnd(TextSeparators.SLASH);
         }
 
         public static IReadOnlyList<string> GetPrefixes(this string location)
@@ -20,13 +19,13 @@ namespace AdvertisingPlatforms.DAL.Extensions
             if (string.IsNullOrEmpty(location)) throw new ArgumentNullException(nameof(location));
 
             location = location.Trim().ToLowerInvariant();
-            var parts = location.Split(new[] { slash }, StringSplitOptions.RemoveEmptyEntries);
+            var parts = location.Split(new[] { TextSeparators.SLASH }, StringSplitOptions.RemoveEmptyEntries);
             var prefixes = new List<string>();
             var sb = new StringBuilder();
 
             foreach (var part in parts)
             {
-                sb.Append(slash);
+                sb.Append(TextSeparators.SLASH);
                 sb.Append(part);
                 prefixes.Add(sb.ToString());
             }

@@ -6,16 +6,14 @@ using AdvertisingPlatforms.Domain.Parser;
 using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
 
-namespace AdvertisingPlatforms.Web.ServiceConfigurations
+namespace AdvertisingPlatforms.Web.Configurations
 {
-    public static class ServiceConfigurationExtensions
+    public static class ServiceConfiguration
     {
-        public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services)
+        public static void ConfigureApplicationServices(this IServiceCollection services)
         {
             AddInfrastructure(services);
             AddApplicationComponents(services);
-
-            return services;
         }
 
         private static void AddInfrastructure(IServiceCollection services)
