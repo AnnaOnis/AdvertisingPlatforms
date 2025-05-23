@@ -1,10 +1,11 @@
-﻿using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Exceptions;
 using AdvertisingPlatforms.Domain.Extensions;
-using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.Extensions.Logging;
+using AdvertisingPlatforms.DAL.Extensions;
 
-namespace AdvertisingPlatforms.Parser
+namespace AdvertisingPlatforms.Domain.Parser
 {
 
     public class PlatformsFileParser : IAdvertisingPlatformParser

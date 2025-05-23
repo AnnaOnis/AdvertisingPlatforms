@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using AdvertisingPlatforms.Domain.Interfaces;
-using AdvertisingPlatforms.Domain.Entities;
 using AdvertisingPlatforms.Domain.Abstractions;
+using AdvertisingPlatforms.DAL.Entities;
+using AdvertisingPlatforms.DAL.Abstractions;
 
-namespace AdvertisingPlatforms.Services
+namespace AdvertisingPlatforms.Domain.Services
 {
     public class AdvertisingPlatformService : IAdvertisingPlatformService
     {

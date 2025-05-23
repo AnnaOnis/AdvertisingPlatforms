@@ -1,5 +1,5 @@
 ﻿
-namespace AdvertisingPlatforms.Domain.Entities
+namespace AdvertisingPlatforms.DAL.Entities
 {
     public class Advertisement
     {

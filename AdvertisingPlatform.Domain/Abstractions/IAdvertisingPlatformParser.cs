@@ -1,6 +1,6 @@
-﻿using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.DAL.Entities;
 
-namespace AdvertisingPlatforms.Domain.Interfaces
+namespace AdvertisingPlatforms.Domain.Abstractions
 {
     /// <summary>
     /// Parser for text files containing advertising platforms

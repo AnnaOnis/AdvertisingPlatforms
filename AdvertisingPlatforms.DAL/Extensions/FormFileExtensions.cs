@@ -1,4 +1,6 @@
-﻿namespace AdvertisingPlatforms.Web.Extensions
+﻿using Microsoft.AspNetCore.Http;
+
+namespace AdvertisingPlatforms.DAL.Extensions
 {
     public static class FormFileExtensions
     {

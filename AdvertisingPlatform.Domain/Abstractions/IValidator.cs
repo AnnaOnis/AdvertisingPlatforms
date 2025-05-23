@@ -1,7 +1,7 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Exceptions;
 
-namespace AdvertisingPlatforms.Domain.Interfaces
+namespace AdvertisingPlatforms.Domain.Abstractions
 {
     /// <summary>
     /// Entity validator

@@ -1,6 +1,6 @@
-﻿using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Exceptions;
-using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.Domain.Abstractions;
 
 namespace AdvertisingPlatforms.Domain.Validators
 {

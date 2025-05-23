@@ -1,15 +1,9 @@
-﻿using System.Xml.Linq;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Extensions;
-using AdvertisingPlatforms.Domain.Interfaces;
-using AdvertisingPlatforms.Domain.Validators;
-using AdvertisingPlatforms.Parser;
-using AdvertisingPlatforms.Services;
-using AdvertisingPlatforms.Web.Extensions;
-using Microsoft.AspNetCore.Http;
+﻿using AdvertisingPlatforms.DAL.Entities;
+using AdvertisingPlatforms.Domain.Abstractions;
+using AdvertisingPlatforms.DAL.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AdvertisingPlatforms.Controllers
+namespace AdvertisingPlatforms.Web.Controllers
 {
     /// <summary>
     /// Controller for working with advertising platforms

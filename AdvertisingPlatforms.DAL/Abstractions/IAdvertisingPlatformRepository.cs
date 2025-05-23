@@ -1,6 +1,6 @@
-﻿using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.DAL.Entities;
 
-namespace AdvertisingPlatforms.Domain.Abstractions
+namespace AdvertisingPlatforms.DAL.Abstractions
 {
     /// <summary>
     /// Repository for working with advertising platforms

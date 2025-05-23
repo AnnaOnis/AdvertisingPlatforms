@@ -1,4 +1,4 @@
-﻿using AdvertisingPlatforms.Web.Filters;
+﻿using AdvertisingPlatforms.Web.Middlewares;
 
 namespace AdvertisingPlatforms.Web.ServiceConfigurations
 {

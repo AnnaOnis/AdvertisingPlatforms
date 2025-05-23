@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace AdvertisingPlatforms.Domain.Extensions
+namespace AdvertisingPlatforms.DAL.Extensions
 {
     public static class LocationStringExtensions
     {

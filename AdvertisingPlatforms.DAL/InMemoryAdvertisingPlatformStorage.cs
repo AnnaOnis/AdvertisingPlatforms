@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Extensions;
+﻿using System.Collections.Immutable;
+using AdvertisingPlatforms.DAL.Extensions;
+using AdvertisingPlatforms.DAL.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace AdvertisingPlatforms.DAL
