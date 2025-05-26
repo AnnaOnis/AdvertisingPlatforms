@@ -23,5 +23,7 @@ namespace AdvertisingPlatforms.Base.Constants
         public const string ERROR_PROCESSING_PLATFORM = "Error processing platform {PlatformName}.";
         public const string EMPTY_PLATFORM_NAME = "Platform name cannot be empty.";
         public const string EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM = "Platform must have at least one location.";
+
+        public const string ERROR_PARSING_LINE = "Error when parsing a line {NumberLine}: {Line}.";
     }
 }

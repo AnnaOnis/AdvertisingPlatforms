@@ -2,6 +2,7 @@
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.DAL.Abstractions;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -11,16 +12,19 @@ namespace AdvertisingPlatforms.Domain.Services
         private readonly IValidator<AdvertisingPlatform> _validatorPlatform;
         private readonly IValidator<Location> _validatorLocation;
         private readonly IAdvertisingPlatformRepository _platformRepository;
+        private readonly IAdvertisingPlatformParser _advertisingPlatformParser;
 
         public AdvertisingPlatformService(ILogger<AdvertisingPlatformService> logger, 
             IValidator<AdvertisingPlatform> validatorPlatform, 
             IValidator<Location> validatorLocation,
-            IAdvertisingPlatformRepository repository)
+            IAdvertisingPlatformRepository repository,
+            IAdvertisingPlatformParser advertisingPlatformParser)
         {
             _logger = logger;
             _validatorPlatform = validatorPlatform;
             _validatorLocation = validatorLocation;
             _platformRepository = repository;
+            _advertisingPlatformParser = advertisingPlatformParser;
         }
 
         public async Task<IReadOnlyCollection<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken)
@@ -38,6 +42,15 @@ namespace AdvertisingPlatforms.Domain.Services
                 _validatorLocation.Validate(platform.Locations);
             }
             await _platformRepository.Save(platforms, cancellationToken);
+        }
+
+        public async Task<int> UploadFromStream(Stream stream, CancellationToken cancellationToken)
+        {
+            var platforms = _advertisingPlatformParser.ParseFile(stream);
+
+            await Upload(platforms, cancellationToken);
+
+            return platforms.Count;
         }
     }
 }

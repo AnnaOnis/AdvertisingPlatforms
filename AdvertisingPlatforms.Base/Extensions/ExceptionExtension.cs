@@ -5,7 +5,7 @@ namespace AdvertisingPlatforms.Base.Extensions
     public static class ExceptionExtension
     {
         /// <summary>
-        ///     Full message of exception
+        /// Full message of exception
         /// </summary>
         public static string FullMessage(this Exception exception, bool needStackTrace = true)
         {

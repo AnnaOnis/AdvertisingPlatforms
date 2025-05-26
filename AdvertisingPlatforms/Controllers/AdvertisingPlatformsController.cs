@@ -14,15 +14,12 @@ namespace AdvertisingPlatforms.Web.Controllers
     public class AdvertisingPlatformsController : ControllerBase
     {
         private readonly IAdvertisingPlatformService _advertisingPlatformService;
-        private readonly IAdvertisingPlatformParser _advertisingPlatformParser;
         private readonly ILogger<AdvertisingPlatformsController> _logger;
 
         public AdvertisingPlatformsController(IAdvertisingPlatformService service, 
-            IAdvertisingPlatformParser parser,
             ILogger<AdvertisingPlatformsController> logger)
         {
             _advertisingPlatformService = service;
-            _advertisingPlatformParser = parser;
             _logger = logger;
         }
 
@@ -36,7 +33,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath, CancellationToken cancellationToken)
-        {   
+        {
              var location = new Location(locationPath);
 
              _logger.LogInformation(LogMessages.SEARCH_REQUEST_FOR_LOCATION, location.Path);
@@ -70,18 +67,14 @@ namespace AdvertisingPlatforms.Web.Controllers
 
             await using var stream = await file.FileToMemoryStreamAsync(cancellationToken);
 
-            _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
-            var platforms = _advertisingPlatformParser.ParseFile(stream);
-
-            _logger.LogInformation(LogMessages.UPLOADING_PLATFORMS, platforms.Count);
-            await _advertisingPlatformService.Upload(platforms, cancellationToken);
+            var platformsCount = await _advertisingPlatformService.UploadFromStream(stream, cancellationToken);
 
             _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
             
             return Ok(new
             {
                 Message = LogMessages.DATA_UPLOADED_SUCCESSFULLY,
-                PlatformsCount = platforms.Count
+                PlatformsCount = platformsCount
             });
         }
     }

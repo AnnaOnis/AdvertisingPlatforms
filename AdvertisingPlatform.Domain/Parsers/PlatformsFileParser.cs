@@ -20,6 +20,7 @@ namespace AdvertisingPlatforms.Domain.Parser
 
         public IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream)
         {
+            _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
             using var reader = new StreamReader(stream);
 
             var content = reader.ReadToEnd();
@@ -27,18 +28,28 @@ namespace AdvertisingPlatforms.Domain.Parser
                 TextSeparators.CONTENT_LINE_SEPARATOR_LF], 
                 StringSplitOptions.RemoveEmptyEntries);
 
-            return lines
-                .Select((line, index) => ParseLine(line))
-                .Where(platform => platform != null)
-                .ToList()
-                .AsReadOnly();
+            var result = new List<AdvertisingPlatform>();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                try
+                {
+                    var platform = ParseLine(line);
+                    result.Add(platform);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, ErrorMessages.ERROR_PARSING_LINE, i + 1, line);
+                }
+            }
+            return result;
         }
 
         private AdvertisingPlatform ParseLine(string line)
         {
             line.ValidateContentLine();
 
-            var parts = line.Split(TextSeparators.SEPARATOR_COLON);
+            var parts = line.Split(TextSeparators.SEPARATOR_COLON, 2);
             var name = parts[0].Trim();
             name.ValidatePlatformName();
 
@@ -53,7 +64,7 @@ namespace AdvertisingPlatforms.Domain.Parser
                 }).ToList();
 
             if (locations.Count == 0)
-                throw new DomainValidationException("At least one valid location required");
+                throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
 
             return new AdvertisingPlatform(advertisement, locations);
         }
