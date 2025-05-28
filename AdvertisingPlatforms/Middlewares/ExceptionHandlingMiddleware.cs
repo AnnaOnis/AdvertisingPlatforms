@@ -25,13 +25,13 @@ namespace AdvertisingPlatforms.Web.Middlewares
             {
                 await _next(context);
             }
-            catch (DomainValidationException domainValidationEx)
+            catch (DomainValidationException exp)
             {
-                await HandleExceptionAsync(context, domainValidationEx, HttpStatusCode.BadRequest);
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
             }
-            catch (DomainException domainEx)
+            catch (DomainException exp)
             {
-                await HandleExceptionAsync(context, domainEx, HttpStatusCode.BadRequest);
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
             }
             catch (ArgumentException exp)
             {
