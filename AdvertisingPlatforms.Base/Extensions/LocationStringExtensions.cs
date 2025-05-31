@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using AdvertisingPlatforms.Base.Constants;
 
-namespace AdvertisingPlatforms.DAL.Extensions
+namespace AdvertisingPlatforms.Base.Extensions
 {
     public static class LocationStringExtensions
     {

@@ -45,7 +45,8 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
             services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
             services.AddScoped<IValidator<Location>, LocationValidator>()
-                .AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>(); 
+                .AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>()
+                .AddScoped<IFileDataValidator<IFileData>, FileDataValidator>(); 
         }
 
         private static void AddRepositories(IServiceCollection services)

@@ -3,10 +3,9 @@ namespace AdvertisingPlatforms.Base.Constants
 {
     public class ErrorMessages
     {
-        public const string FILE_VALIDATION_FAILED = "File validation failed: {Error}.";
-        public const string FILE_IS_REQUIRED = "File is required.";
-        public const string ALLOWED_FILE_EXTENSION = "Only .txt files are allowed.";
-        public const string INVALID_FILE_TYPE = "Invalid file type.";
+        public const string FILE_IS_REQUIRED = "File validation failed: File is required.";
+        public const string ALLOWED_FILE_EXTENSION = "File validation failed: Only .txt files are allowed.";
+        public const string INVALID_FILE_TYPE = "File validation failed: Invalid file type.";
         public const string NULL_LOCATION = "Location cannot be null.";
         public const string EMPTY_LOCATION_PATH = "Location path cannot be empty.";
         public const string UPLOAD_DATA_FAILED = "Upload data failed.";

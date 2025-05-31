@@ -3,7 +3,6 @@ using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.Extensions.Logging;
-using AdvertisingPlatforms.DAL.Extensions;
 using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Domain.Parser

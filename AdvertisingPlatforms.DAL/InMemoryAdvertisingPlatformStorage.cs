@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using AdvertisingPlatforms.DAL.Extensions;
+using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.DAL.Entities;
 using Microsoft.Extensions.Logging;
 using AdvertisingPlatforms.Base.Constants;

@@ -1,5 +1,5 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
-using AdvertisingPlatforms.DAL.Extensions;
+using AdvertisingPlatforms.Base.Extensions;
 
 namespace AdvertisingPlatforms.DAL.Entities
 {

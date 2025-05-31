@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\AdvertisingPlatform.Domain\AdvertisingPlatforms.Domain.csproj" />
     <ProjectReference Include="..\AdvertisingPlatforms.DAL\AdvertisingPlatforms.DAL.csproj" />
   </ItemGroup>

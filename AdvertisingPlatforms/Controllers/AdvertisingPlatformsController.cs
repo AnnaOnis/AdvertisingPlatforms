@@ -1,8 +1,8 @@
 ﻿using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Abstractions;
-using AdvertisingPlatforms.DAL.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Web.Helpers;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -59,15 +59,9 @@ namespace AdvertisingPlatforms.Web.Controllers
         {
             _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, file?.FileName);
 
-            if (!file.IsValidTextFile(out var validationError))
-            {
-                _logger.LogWarning(ErrorMessages.FILE_VALIDATION_FAILED, validationError);
-                return BadRequest(validationError);
-            }
+            var fileData = new FormFileAdapter(file);
 
-            await using var stream = await file.FileToMemoryStreamAsync(cancellationToken);
-
-            var platformsCount = await _advertisingPlatformService.UploadFromStream(stream, cancellationToken);
+            var platformsCount = await _advertisingPlatformService.UploadFromFile(fileData, cancellationToken);
 
             _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
             

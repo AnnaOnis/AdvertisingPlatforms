@@ -15,12 +15,12 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         Task Upload(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Uploads advertising platform data from a provided data stream.
+        /// Uploads advertising platform data from a text file.
         /// </summary>
-        /// <param name="stream">The input stream containing advertising platform data to upload.</param>
+        /// <param name="fileData">The input text file containing advertising platform data to upload.</param>
         /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
         /// <returns>The number of advertising platforms successfully uploaded.</returns>
-        Task<int> UploadFromStream(Stream stream, CancellationToken cancellationToken);
+        Task<int> UploadFromFile(IFileData fileData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Searches for platforms by specified location
