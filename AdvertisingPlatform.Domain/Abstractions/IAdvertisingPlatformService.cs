@@ -28,6 +28,6 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="location">Target location</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of matching platforms</returns>
-        Task<IReadOnlyCollection<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<AdvertisingPlatform>> Search(string locationPath, CancellationToken cancellationToken);
     }
 }

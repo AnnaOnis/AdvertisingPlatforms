@@ -33,15 +33,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath, CancellationToken cancellationToken)
-        {
-             var location = new Location(locationPath);
-
-             _logger.LogInformation(LogMessages.SEARCH_REQUEST_FOR_LOCATION, location.Path);
-
-             var platforms = await _advertisingPlatformService.Search(location, cancellationToken);
-
-             _logger.LogInformation(LogMessages.RETURNING_PLATFORMS_FOR_LOCATION,
-             platforms.Count(), location.Path);
+        { 
+             var platforms = await _advertisingPlatformService.Search(locationPath, cancellationToken);
 
              return Ok(platforms.Select(p => p.Advertisement.Name));
         }
@@ -57,13 +50,9 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult> UploadData(IFormFile file, CancellationToken cancellationToken)
         {
-            _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, file?.FileName);
-
             var fileData = new FormFileAdapter(file);
 
             var platformsCount = await _advertisingPlatformService.UploadFromFile(fileData, cancellationToken);
-
-            _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
             
             return Ok(new
             {

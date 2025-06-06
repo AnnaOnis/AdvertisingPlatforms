@@ -5,6 +5,7 @@ using AdvertisingPlatforms.Domain.Validators;
 using AdvertisingPlatforms.Domain.Parser;
 using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
+using Microsoft.AspNetCore.HttpLogging;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -38,6 +39,14 @@ namespace AdvertisingPlatforms.Web.Configurations
                 logging.AddConsole();
                 logging.AddDebug();
             });
+
+            services.AddHttpLogging
+                (logging => { 
+                    logging.LoggingFields = HttpLoggingFields.All;
+                    logging.RequestBodyLogLimit = 4096;
+                    logging.ResponseBodyLogLimit = 4096;
+                    logging.CombineLogs = true;
+                });
         }
 
         private static void AddDomainServices(IServiceCollection services)

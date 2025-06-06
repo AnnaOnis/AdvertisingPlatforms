@@ -29,9 +29,12 @@ namespace AdvertisingPlatforms.Domain.Services
             _advertisingPlatformParser = advertisingPlatformParser;
         }
 
-        public async Task<IReadOnlyCollection<AdvertisingPlatform>> Search(Location location, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<AdvertisingPlatform>> Search(string locationPath, CancellationToken cancellationToken)
         {
+            var location = new Location(locationPath);
+
             _validatorLocation.Validate(location);
+
             var platforms = await _platformRepository.FindByLocation(location, cancellationToken);
             return platforms;
         }
