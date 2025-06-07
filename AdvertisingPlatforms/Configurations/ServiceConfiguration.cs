@@ -1,11 +1,11 @@
-﻿using AdvertisingPlatforms.DAL;
-using AdvertisingPlatforms.Domain.Abstractions;
+﻿using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Validators;
 using AdvertisingPlatforms.Domain.Parser;
 using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
 using Microsoft.AspNetCore.HttpLogging;
+using AdvertisingPlatforms.DAL.Repositories.InMemory;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -60,12 +60,12 @@ namespace AdvertisingPlatforms.Web.Configurations
 
         private static void AddRepositories(IServiceCollection services)
         {
-            services.AddScoped<IAdvertisingPlatformRepository, AdvertisingPlatformRepositoryInMemory>();
+            services.AddSingleton<IAdvertisingPlatformRepository, InMemoryAdvertisingPlatformRepository>();
         }
 
         private static void AddDataStorage(IServiceCollection services)
         {
-            services.AddSingleton<InMemoryAdvertisingPlatformStorage>();
+            
         }
     }
 }

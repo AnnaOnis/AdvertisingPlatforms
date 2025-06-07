@@ -15,4 +15,8 @@
     <ProjectReference Include="..\AdvertisingPlatforms.Base\AdvertisingPlatforms.Base.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositories\DataBase\" />
+  </ItemGroup>
+
 </Project>

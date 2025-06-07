@@ -35,7 +35,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
             _validatorLocation.Validate(location);
 
-            var platforms = await _platformRepository.FindByLocation(location, cancellationToken);
+            var platforms = await _platformRepository.FindByLocationAsync(location, cancellationToken);
             return platforms;
         }
 
@@ -46,7 +46,7 @@ namespace AdvertisingPlatforms.Domain.Services
             {
                 _validatorLocation.Validate(platform.Locations);
             }
-            await _platformRepository.Save(platforms, cancellationToken);
+            await _platformRepository.AddRangeAsync(platforms, cancellationToken);
         }
 
         public async Task<int> UploadFromFile(IFileData file, CancellationToken cancellationToken)

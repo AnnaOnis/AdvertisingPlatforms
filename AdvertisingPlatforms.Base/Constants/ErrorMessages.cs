@@ -15,5 +15,7 @@ namespace AdvertisingPlatforms.Base.Constants
         public const string EMPTY_PLATFORM_NAME = "Platform name cannot be empty.";
         public const string EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM = "Platform must have at least one location.";
         public const string ERROR_PARSING_LINE = "Error when parsing a line {NumberLine}: {Line}.";
+        public const string ENTITY_NOT_FOUND = "Entity with not found! Id: ";
+        public const string ENTITY_ALREADY_EXISTS = "Entity already exists! Id: ";
     }
 }

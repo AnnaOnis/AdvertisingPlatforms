@@ -1,7 +1,9 @@
 ﻿
+using AdvertisingPlatforms.DAL.Abstractions;
+
 namespace AdvertisingPlatforms.DAL.Entities
 {
-    public class Advertisement
+    public class Advertisement : IEntity
     {
         /// <summary>
         /// Unique advertisement identifier
