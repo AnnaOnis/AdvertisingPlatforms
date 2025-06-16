@@ -1,6 +1,6 @@
-﻿using AdvertisingPlatforms.Domain.Entities;
+﻿using AdvertisingPlatforms.DAL.Entities;
 
-namespace AdvertisingPlatforms.Domain.Interfaces
+namespace AdvertisingPlatforms.Domain.Abstractions
 {
     /// <summary>
     /// Service for working with advertising platforms
@@ -13,6 +13,14 @@ namespace AdvertisingPlatforms.Domain.Interfaces
         /// <param name="platforms">Collection of advertising platforms</param>
         /// <param name="cancellationToken">Cancellation token</param>
         Task Upload(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Uploads advertising platform data from a text file.
+        /// </summary>
+        /// <param name="fileData">The input text file containing advertising platform data to upload.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+        /// <returns>The number of advertising platforms successfully uploaded.</returns>
+        Task<int> UploadFromFile(IFileData fileData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Searches for platforms by specified location

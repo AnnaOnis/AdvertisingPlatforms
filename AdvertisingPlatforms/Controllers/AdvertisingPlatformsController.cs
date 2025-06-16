@@ -1,15 +1,10 @@
-﻿using System.Xml.Linq;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Extensions;
-using AdvertisingPlatforms.Domain.Interfaces;
-using AdvertisingPlatforms.Domain.Validators;
-using AdvertisingPlatforms.Parser;
-using AdvertisingPlatforms.Services;
-using AdvertisingPlatforms.Web.Extensions;
-using Microsoft.AspNetCore.Http;
+﻿using AdvertisingPlatforms.DAL.Entities;
+using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
+using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Web.Helpers;
 
-namespace AdvertisingPlatforms.Controllers
+namespace AdvertisingPlatforms.Web.Controllers
 {
     /// <summary>
     /// Controller for working with advertising platforms
@@ -19,15 +14,12 @@ namespace AdvertisingPlatforms.Controllers
     public class AdvertisingPlatformsController : ControllerBase
     {
         private readonly IAdvertisingPlatformService _advertisingPlatformService;
-        private readonly IAdvertisingPlatformParser _advertisingPlatformParser;
         private readonly ILogger<AdvertisingPlatformsController> _logger;
 
         public AdvertisingPlatformsController(IAdvertisingPlatformService service, 
-            IAdvertisingPlatformParser parser,
             ILogger<AdvertisingPlatformsController> logger)
         {
             _advertisingPlatformService = service;
-            _advertisingPlatformParser = parser;
             _logger = logger;
         }
 
@@ -41,14 +33,14 @@ namespace AdvertisingPlatforms.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath, CancellationToken cancellationToken)
-        {   
+        {
              var location = new Location(locationPath);
 
-             _logger.LogInformation("Search request for location: {Location}", location.Path);
+             _logger.LogInformation(LogMessages.SEARCH_REQUEST_FOR_LOCATION, location.Path);
 
              var platforms = await _advertisingPlatformService.Search(location, cancellationToken);
 
-             _logger.LogInformation("Returning {Count} platforms for location: {Location}",
+             _logger.LogInformation(LogMessages.RETURNING_PLATFORMS_FOR_LOCATION,
              platforms.Count(), location.Path);
 
              return Ok(platforms.Select(p => p.Advertisement.Name));
@@ -65,30 +57,18 @@ namespace AdvertisingPlatforms.Controllers
         [ProducesResponseType(400)]
         public async Task<ActionResult> UploadData(IFormFile file, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting file upload: {FileName}", file?.FileName);
+            _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, file?.FileName);
 
-            if (!file.IsValidTextFile(out var validationError))
-            {
-                _logger.LogWarning("File validation failed: {Error}", validationError);
-                return BadRequest(validationError);
-            }
+            var fileData = new FormFileAdapter(file);
 
-            await using var stream = new MemoryStream();
-            await file.CopyToAsync(stream);
-            stream.Position = 0;
+            var platformsCount = await _advertisingPlatformService.UploadFromFile(fileData, cancellationToken);
 
-            _logger.LogDebug("Parsing file content");
-            var platforms = _advertisingPlatformParser.ParseFile(stream);
-
-            _logger.LogInformation("Uploading {Count} platforms", platforms.Count);
-            await _advertisingPlatformService.Upload(platforms, cancellationToken);
-
-            _logger.LogInformation("Data fron file {FileName} uploaded successfully.", file.FileName);
+            _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
             
             return Ok(new
             {
-                Message = "Data uploaded successfully",
-                PlatformsCount = platforms.Count
+                Message = LogMessages.DATA_UPLOADED_SUCCESSFULLY,
+                PlatformsCount = platformsCount
             });
         }
     }

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvertisingPlatforms.Domain
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvertisingPlatforms.DAL", "AdvertisingPlatforms.DAL\AdvertisingPlatforms.DAL.csproj", "{AFCD0E71-7915-49BB-A240-0C21B5B3270B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvertisingPlatforms.Base", "AdvertisingPlatforms.Base\AdvertisingPlatforms.Base.csproj", "{25A2C4DC-11E4-4613-B25C-965A16F80269}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{AFCD0E71-7915-49BB-A240-0C21B5B3270B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFCD0E71-7915-49BB-A240-0C21B5B3270B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFCD0E71-7915-49BB-A240-0C21B5B3270B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25A2C4DC-11E4-4613-B25C-965A16F80269}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25A2C4DC-11E4-4613-B25C-965A16F80269}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25A2C4DC-11E4-4613-B25C-965A16F80269}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25A2C4DC-11E4-4613-B25C-965A16F80269}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

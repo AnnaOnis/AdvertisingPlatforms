@@ -1,21 +1,19 @@
 ﻿using AdvertisingPlatforms.DAL;
 using AdvertisingPlatforms.Domain.Abstractions;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Interfaces;
+using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Validators;
-using AdvertisingPlatforms.Parser;
-using AdvertisingPlatforms.Services;
+using AdvertisingPlatforms.Domain.Parser;
+using AdvertisingPlatforms.Domain.Services;
+using AdvertisingPlatforms.DAL.Abstractions;
 
-namespace AdvertisingPlatforms.Web.ServiceConfigurations
+namespace AdvertisingPlatforms.Web.Configurations
 {
-    public static class ServiceConfigurationExtensions
+    public static class ServiceConfiguration
     {
-        public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services)
+        public static void ConfigureApplicationServices(this IServiceCollection services)
         {
             AddInfrastructure(services);
             AddApplicationComponents(services);
-
-            return services;
         }
 
         private static void AddInfrastructure(IServiceCollection services)
@@ -29,10 +27,8 @@ namespace AdvertisingPlatforms.Web.ServiceConfigurations
         private static void AddApplicationComponents(IServiceCollection services)
         {
             AddDomainServices(services);
-            AddValidators(services);
             AddRepositories(services);
             AddDataStorage(services);
-            AddParsers(services);
         }
 
         private static void AddLogging(IServiceCollection services)
@@ -47,16 +43,10 @@ namespace AdvertisingPlatforms.Web.ServiceConfigurations
         private static void AddDomainServices(IServiceCollection services)
         {       
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
-        }
-        private static void AddParsers(IServiceCollection services)
-        {
             services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
-        }
-
-        private static void AddValidators(IServiceCollection services)
-        {
             services.AddScoped<IValidator<Location>, LocationValidator>()
-                .AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>();            
+                .AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>()
+                .AddScoped<IFileDataValidator<IFileData>, FileDataValidator>(); 
         }
 
         private static void AddRepositories(IServiceCollection services)

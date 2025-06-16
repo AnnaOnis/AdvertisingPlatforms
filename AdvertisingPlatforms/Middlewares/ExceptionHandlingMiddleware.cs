@@ -1,24 +1,22 @@
 ﻿using System.Net;
-using System;
-using Microsoft.AspNetCore.Mvc.Filters;
-using AdvertisingPlatforms.Domain.Exceptions;
+using AdvertisingPlatforms.Base.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using System.Text.Json;
+using AdvertisingPlatforms.Base.Extensions;
 
-namespace AdvertisingPlatforms.Web.Filters
+namespace AdvertisingPlatforms.Web.Middlewares
 {
     public class ExceptionHandlingMiddleware
     {
+        private readonly IWebHostEnvironment _environment;
         private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
         public ExceptionHandlingMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionHandlingMiddleware> logger)
+            IWebHostEnvironment environment,
+            RequestDelegate next)
         {
+            _environment = environment;
             _next = next;
-            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -27,40 +25,50 @@ namespace AdvertisingPlatforms.Web.Filters
             {
                 await _next(context);
             }
-            catch (Exception ex)
+            catch (DomainValidationException exp)
             {
-                await HandleExceptionAsync(context, ex);
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
+            }
+            catch (DomainException exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
+            }
+            catch (ArgumentException exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
+            }
+            catch (AggregateException exp)
+            {
+                await HandleExceptionAsync(context, exp.GetBaseException(), HttpStatusCode.InternalServerError);
+            }
+            catch (JsonException exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
+            }
+            catch (Exception exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.InternalServerError);
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode code)
         {
-            _logger.LogError(exception, "Exception occurred: {Message}", exception.Message);
-
-
-            var (statusCode, type, message) = exception switch
-            {
-                DomainValidationException domainValidationEx =>
-                    (StatusCodes.Status400BadRequest, domainValidationEx.Type, domainValidationEx.Message),
-                DomainException domainEx =>
-                    (StatusCodes.Status400BadRequest, domainEx.Type, domainEx.Message),
-                _ =>
-                    (StatusCodes.Status500InternalServerError, "SERVER_ERROR", "Internal server error")
-            };
-
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/json";
-
             var errorResponse = new ProblemDetails
             {
-                Status = statusCode,
-                Title = type,
-                Detail = message,
-                Instance = context.Request.Path
+                Status = (int)code,
+                Title = exception.Message,
+                Instance = context.Request.Path,
+                Type = code.ToString()
             };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
 
+            if (!_environment.IsProduction())
+                errorResponse.Detail = exception.FullMessage();
+
+            context.Response.StatusCode = (int)code;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
         }
     }
 }

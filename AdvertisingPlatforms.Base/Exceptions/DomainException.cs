@@ -1,8 +1,10 @@
-﻿namespace AdvertisingPlatforms.Domain.Exceptions
+﻿using AdvertisingPlatforms.Base.Constants;
+
+namespace AdvertisingPlatforms.Base.Exceptions
 {
     public class DomainException : Exception
     {
-        public string Type { get; } = "DOMAIN_ERROR";
+        public string Type { get; } = ExceptionTypes.VALIDATION_ERROR;
         public DomainException(string? message, string type) : base(message) 
         { 
             Type = type;

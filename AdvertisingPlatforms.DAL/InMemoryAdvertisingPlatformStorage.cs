@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using AdvertisingPlatforms.Domain.Entities;
-using AdvertisingPlatforms.Domain.Extensions;
+﻿using System.Collections.Immutable;
+using AdvertisingPlatforms.Base.Extensions;
+using AdvertisingPlatforms.DAL.Entities;
 using Microsoft.Extensions.Logging;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.DAL
 {
@@ -29,11 +29,9 @@ namespace AdvertisingPlatforms.DAL
         /// <exception cref="ArgumentNullException">Thrown when null collection is provided</exception>
         public Task StoreAdvertisingPlatforms(IReadOnlyList<AdvertisingPlatform> platformsToStore, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting data upload...");
-
             if (platformsToStore == null)
             {
-                _logger.LogError("Upload failed: null platforms collection");
+                _logger.LogError(ErrorMessages.UPLOAD_DATA_FAILED + ErrorMessages.NULL_PLATFORMS_COLLECTION);
                 throw new ArgumentNullException(nameof(platformsToStore));
             }
 
@@ -49,14 +47,14 @@ namespace AdvertisingPlatforms.DAL
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing platform {PlatformName}", platform.Advertisement.Name);
+                    _logger.LogError(ex, ErrorMessages.ERROR_PROCESSING_PLATFORM, platform.Advertisement.Name);
                 }
 
             }
 
             Interlocked.Exchange(ref _platformsByLocationPrefix, platformsByLocationPrefixBuilder.ToImmutable());
 
-            _logger.LogInformation("Upload completed. Processed {PlatformCount} platforms with {LocationPrefixCount} locations",
+            _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY + LogMessages.COUNT_PROCESSED_LOCATIONS,
             platformsToStore.Count, processedLocations);
 
             return Task.CompletedTask;
@@ -107,18 +105,18 @@ namespace AdvertisingPlatforms.DAL
         /// <exception cref="ArgumentNullException">Thrown when null location is provided</exception>
         public Task<IReadOnlyCollection<AdvertisingPlatform>> FindPlatformsByLocation(Location targetLocation, CancellationToken cancellationToken)
         {
-            _logger.LogDebug("Searching for location: {Location}", targetLocation);
+            _logger.LogDebug(LogMessages.SEARCH_REQUEST_FOR_LOCATION, targetLocation);
 
             if (targetLocation == null)
             {
-                _logger.LogWarning("");
+                _logger.LogWarning(ErrorMessages.NULL_LOCATION);
                 throw new ArgumentNullException(nameof(targetLocation));
             }
 
             if (_platformsByLocationPrefix.TryGetValue(targetLocation.Path, out var setPlatforms))
             {
 
-                _logger.LogInformation("Found {Count} platforms for location {Location}",
+                _logger.LogInformation(LogMessages.RETURNING_PLATFORMS_FOR_LOCATION,
                 setPlatforms.Count, targetLocation.Path);
 
                 return Task.FromResult<IReadOnlyCollection<AdvertisingPlatform>>(setPlatforms);

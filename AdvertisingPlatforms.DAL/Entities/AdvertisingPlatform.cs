@@ -1,6 +1,6 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
 
-namespace AdvertisingPlatforms.Domain.Entities
+namespace AdvertisingPlatforms.DAL.Entities
 {
     /// <summary>
     /// Represents an advertising platform with a set of locations
