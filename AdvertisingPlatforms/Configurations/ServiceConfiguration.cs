@@ -6,15 +6,20 @@ using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
 using Microsoft.AspNetCore.HttpLogging;
 using AdvertisingPlatforms.DAL.Repositories.InMemory;
+using AdvertisingPlatforms.DAL;
+using AdvertisingPlatforms.DAL.Repositories.DataBase;
+using Microsoft.EntityFrameworkCore;
+using AdvertisingPlatforms.Domain.Models;
+using AdvertisingPlatforms.Domain.Fabrics;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
     public static class ServiceConfiguration
     {
-        public static void ConfigureApplicationServices(this IServiceCollection services)
+        public static void ConfigureApplicationServices(this IServiceCollection services, IConfiguration config)
         {
             AddInfrastructure(services);
-            AddApplicationComponents(services);
+            AddApplicationComponents(services, config);
         }
 
         private static void AddInfrastructure(IServiceCollection services)
@@ -25,11 +30,11 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddSwaggerGen();
         }
 
-        private static void AddApplicationComponents(IServiceCollection services)
+        private static void AddApplicationComponents(IServiceCollection services, IConfiguration config)
         {
             AddDomainServices(services);
-            AddRepositories(services);
-            AddDataStorage(services);
+            AddDomainModelFactories(services);
+            AddRepositories(services, config);
         }
 
         private static void AddLogging(IServiceCollection services)
@@ -53,18 +58,40 @@ namespace AdvertisingPlatforms.Web.Configurations
         {       
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
             services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
-            services.AddScoped<IValidator<Location>, LocationValidator>()
-                .AddScoped<IValidator<AdvertisingPlatform>, AdvertisingPlatformValidator>()
-                .AddScoped<IFileDataValidator<IFileData>, FileDataValidator>(); 
+            services.AddScoped<IValidator<LocationDb>, LocationValidator>()
+                .AddScoped<IValidator<AdvertisingPlatformDb>, AdvertisingPlatformValidator>()
+                .AddScoped<IFileDataValidator<IFileData>, FileDataValidator>();
+            services.AddScoped<IUploadDataService, UploadDataService>();
         }
 
-        private static void AddRepositories(IServiceCollection services)
+        private static void AddDomainModelFactories(IServiceCollection services)
         {
-            services.AddSingleton<IAdvertisingPlatformRepository, InMemoryAdvertisingPlatformRepository>();
+            services.AddScoped<IDomainModelFactory<AdvertisementDb, Advertisement>, AdvertisementFactory>();
+            services.AddScoped<IDomainModelFactory<LocationDb, Location>, LocationFactory>();
+            services.AddScoped<IDomainModelFactory<AdvertisingPlatformDb, AdvertisingPlatform>, AdvertisingPlatformFactory>();
         }
 
-        private static void AddDataStorage(IServiceCollection services)
+        private static void AddRepositories(IServiceCollection services, IConfiguration config)
         {
+            var useDatabase = config.GetValue<bool>("UseDatabase");
+
+            if (useDatabase)
+            {
+                services.AddDbContext<AdvertisingPlatformsDbContext>(options =>
+                    options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+
+                services.AddScoped<IAdvertisingPlatformRepository, EFAdvertisingPlatformRepository>();
+                services.AddScoped<IAdvertisementRepository, EFAdvertisementRepository>();
+                services.AddScoped<ILocationRepository, EFLocationRepository>();
+                services.AddScoped<IUnitOfWork, UnitOfWorkEF>();
+            }
+            else
+            {
+                services.AddSingleton<IAdvertisingPlatformRepository, InMemoryAdvertisingPlatformRepository>();
+                services.AddSingleton<ILocationRepository, InMemoryLocationRepository>();
+                services.AddSingleton<IAdvertisementRepository, InMemoryAdvertisementRepository>();
+                services.AddSingleton<IUnitOfWork, UnitOfWorkInMemory>();
+            }
             
         }
     }

@@ -6,76 +6,55 @@ using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.DAL.Abstractions;
+using AdvertisingPlatforms.DAL.Delegates;
 using AdvertisingPlatforms.DAL.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 {
-    public class InMemoryAdvertisingPlatformRepository :  IAdvertisingPlatformRepository
+    public class InMemoryAdvertisingPlatformRepository : InMemoryRepository<AdvertisingPlatformDb>, IAdvertisingPlatformRepository
     {
-        private readonly ConcurrentDictionary<Guid, AdvertisingPlatform> _platformsById = new();
-        private readonly ConcurrentDictionary<string, HashSet<AdvertisingPlatform>> _platformsByLocationPrefix = new();
-        private readonly ILogger<InMemoryAdvertisingPlatformRepository> _logger;
-
-        public InMemoryAdvertisingPlatformRepository(ILogger<InMemoryAdvertisingPlatformRepository> logger)
+        private readonly ConcurrentDictionary<string, HashSet<AdvertisingPlatformDb>> _platformsByLocationPrefix = new();
+        public InMemoryAdvertisingPlatformRepository()
         {
-            _logger = logger;
         }
 
-        public Task<AdvertisingPlatform> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public override async Task<AdvertisingPlatformDb> AddAsync(AdvertisingPlatformDb platform, CancellationToken cancellationToken)
         {
-            if (!_platformsById.TryGetValue(id, out var entity))
-            {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + id);
-            }
-
-            return Task.FromResult(entity);
-        }
-
-        public Task<IReadOnlyCollection<AdvertisingPlatform>> GetAllAsync(CancellationToken cancellationToken)
-        {
-            return Task.FromResult<IReadOnlyCollection<AdvertisingPlatform>>(_platformsById.Values.ToList());
-        }
-
-        public async Task<AdvertisingPlatform> AddAsync(AdvertisingPlatform platform, CancellationToken cancellationToken)
-        {
-            if (!_platformsById.TryAdd(platform.Id, platform))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + platform.Id);
-            }
+            await base.AddAsync(platform, cancellationToken);
 
             await AddPlatformToLocationPrefixes(platform);
             return platform;
         }
 
-        public async Task<IReadOnlyCollection<AdvertisingPlatform>> AddRangeAsync(IReadOnlyList<AdvertisingPlatform> platforms, CancellationToken cancellationToken)
+        public override async Task<IReadOnlyCollection<AdvertisingPlatformDb>> AddRangeAsync(IReadOnlyList<AdvertisingPlatformDb> platforms, CancellationToken cancellationToken)
         {
-            var result = new List<AdvertisingPlatform>();
+            var result = new List<AdvertisingPlatformDb>();
             foreach (var platform in platforms)
             {
                 result.Add(await AddAsync(platform, cancellationToken));
-            }
+            }         
 
              return result;
         }
 
-        public async Task UpdateAsync(AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public override async Task UpdateAsync(AdvertisingPlatformDb platform, CancellationToken cancellationToken)
         {
-            if (!_platformsById.TryGetValue(platform.Id, out var existingPlatform))
+            if (!_entityById.TryGetValue(platform.Id, out var existingPlatform))
             {
                 throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + platform.Id);
             }
 
             await RemovePlatformFromLocationPrefixes(existingPlatform);
 
-            _platformsById[platform.Id] = platform;
+            _entityById[platform.Id] = platform;
 
             await AddPlatformToLocationPrefixes(platform);
         }
 
-        public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        public override async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
         {
-            if (!_platformsById.TryRemove(id, out var platform))
+            if (!_entityById.TryRemove(id, out var platform))
             {
                 throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + id);
             }
@@ -83,31 +62,40 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             await RemovePlatformFromLocationPrefixes(platform);
         }
 
-        public Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocationAsync(Location location, CancellationToken cancellationToken)
+        public async Task<IReadOnlyCollection<AdvertisingPlatformDb>> FindByLocationAsync(LocationDb location,
+            CancellationToken cancellationToken, 
+            AdvertisingPlatformsSortDelegate? sortDelegate = null)
         {
             if (location == null)
             {
                 throw new ArgumentNullException(nameof(location));
             }
 
-            if (_platformsByLocationPrefix.TryGetValue(location.Path, out var platforms))
+            if (!_platformsByLocationPrefix.TryGetValue(location.Path, out var platforms))
             {
-                return Task.FromResult<IReadOnlyCollection<AdvertisingPlatform>>(platforms);
+                return Array.Empty<AdvertisingPlatformDb>();
+            }
+            var query = platforms.AsQueryable();
+
+            if (sortDelegate != null)
+            {
+                query = sortDelegate(query);
             }
 
-            return Task.FromResult<IReadOnlyCollection<AdvertisingPlatform>>(Array.Empty<AdvertisingPlatform>());
+            return await Task.FromResult(query.ToList());
         }
 
-        private Task AddPlatformToLocationPrefixes(AdvertisingPlatform platform)
+        private Task AddPlatformToLocationPrefixes(AdvertisingPlatformDb platform)
         {
-            foreach (var location in platform.Locations)
+           var location = platform.Location;
+            if (location != null)
             {
                 var prefixes = location.Path.GetPrefixes();
                 foreach (var prefix in prefixes)
                 {
                     _platformsByLocationPrefix.AddOrUpdate(
                         prefix,
-                        _ => new HashSet<AdvertisingPlatform> { platform },
+                        _ => new HashSet<AdvertisingPlatformDb> { platform },
                         (_, set) =>
                         {
                             set.Add(platform);
@@ -119,9 +107,10 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             return Task.CompletedTask;
         }
 
-        private Task RemovePlatformFromLocationPrefixes(AdvertisingPlatform platform)
+        private Task RemovePlatformFromLocationPrefixes(AdvertisingPlatformDb platform)
         {
-            foreach (var location in platform.Locations)
+            var location = platform.Location;
+            if (location != null)
             {
                 var prefixes = location.Path.GetPrefixes();
                 foreach (var prefix in prefixes)
@@ -138,6 +127,11 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             }
 
             return Task.CompletedTask;
+        }
+
+        public async Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
+        {
+            return _entityById.Values.Any(p => p.AdvertisementId == advertisementId && p.LocationId == locationId);
         }
     }
 }

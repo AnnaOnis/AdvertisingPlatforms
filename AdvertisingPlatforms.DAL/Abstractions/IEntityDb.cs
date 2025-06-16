@@ -3,7 +3,7 @@
     /// <summary>
     /// Interface for all entities with unique identifier
     /// </summary>
-    public interface IEntity
+    public interface IEntityDb
     {
         Guid Id { get; init; }
     }

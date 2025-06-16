@@ -7,7 +7,7 @@ namespace AdvertisingPlatforms.Domain.Abstractions
     /// Entity validator
     /// </summary>
     /// <typeparam name="TEntity">Entity type to validate</typeparam>
-    public interface IValidator<TEntity> where TEntity : class, IEntity
+    public interface IValidator<TEntity> where TEntity : class, IEntityDb
     {
         /// <summary>
         /// Validates a single entity

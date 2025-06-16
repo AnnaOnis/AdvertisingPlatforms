@@ -1,20 +1,17 @@
-﻿using AdvertisingPlatforms.DAL.Entities;
+﻿using AdvertisingPlatforms.DAL.Delegates;
+using AdvertisingPlatforms.DAL.Entities;
 
 namespace AdvertisingPlatforms.DAL.Abstractions
 {
     /// <summary>
     /// Repository for working with advertising platforms
     /// </summary>
-    public interface IAdvertisingPlatformRepository : IRepository<AdvertisingPlatform>
+    public interface IAdvertisingPlatformRepository : IRepository<AdvertisingPlatformDb>
     {
-        /// <summary>
-        /// Finds advertising platforms by specified location
-        /// </summary>
-        /// <param name="location">Geographic location to search</param>
-        /// <param name="cancellationToken">Operation cancellation token</param>
-        /// <returns>List of advertising platforms in the specified location</returns>
-        Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocationAsync(Location location, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<AdvertisingPlatformDb>> FindByLocationAsync(LocationDb location, 
+            CancellationToken cancellationToken, 
+            AdvertisingPlatformsSortDelegate? sortDelegate = null);
 
-
+        Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken);
     }
 }

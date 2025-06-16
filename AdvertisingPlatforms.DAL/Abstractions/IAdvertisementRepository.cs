@@ -2,8 +2,8 @@
 
 namespace AdvertisingPlatforms.DAL.Abstractions
 {
-    public interface IAdvertisementRepository : IRepository<Advertisement>
+    public interface IAdvertisementRepository : IRepository<AdvertisementDb>
     {
-        Task<Advertisement> FindByNameAsync (string name, CancellationToken cancellationToken);
+        Task<AdvertisementDb?> FindByNameAsync (string name, CancellationToken cancellationToken);
     }
 }

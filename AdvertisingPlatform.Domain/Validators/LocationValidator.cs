@@ -5,9 +5,9 @@ using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Domain.Validators
 {
-    public class LocationValidator : IValidator<Location>
+    public class LocationValidator : IValidator<LocationDb>
     {
-        public void Validate(Location? location)
+        public void Validate(LocationDb? location)
         {
             if (location == null)
                 throw new ArgumentNullException( ErrorMessages.NULL_LOCATION, nameof(location));
@@ -16,7 +16,7 @@ namespace AdvertisingPlatforms.Domain.Validators
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATION_PATH);
         }
 
-        public void Validate(IEnumerable<Location>? locations)
+        public void Validate(IEnumerable<LocationDb>? locations)
         {
             if (locations == null)
                 throw new ArgumentNullException(nameof(locations));

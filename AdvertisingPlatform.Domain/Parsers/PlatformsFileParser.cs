@@ -4,6 +4,7 @@ using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.Extensions.Logging;
 using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Domain.DTOs;
 
 namespace AdvertisingPlatforms.Domain.Parser
 {
@@ -17,7 +18,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             _logger = logger;
         }
 
-        public IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream)
+        public IReadOnlyList<ParseDataDTO> ParseFile(Stream stream)
         {
             _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
             using var reader = new StreamReader(stream);
@@ -27,14 +28,14 @@ namespace AdvertisingPlatforms.Domain.Parser
                 TextSeparators.CONTENT_LINE_SEPARATOR_LF], 
                 StringSplitOptions.RemoveEmptyEntries);
 
-            var result = new List<AdvertisingPlatform>();
+            var result = new List<ParseDataDTO>();
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
                 try
                 {
-                    var platform = ParseLine(line);
-                    result.Add(platform);
+                    var dto = ParseLine(line);
+                    result.Add(dto);
                 }
                 catch (Exception ex)
                 {
@@ -44,7 +45,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             return result;
         }
 
-        private AdvertisingPlatform ParseLine(string line)
+        private ParseDataDTO ParseLine(string line)
         {
             line.ValidateContentLine();
 
@@ -52,20 +53,18 @@ namespace AdvertisingPlatforms.Domain.Parser
             var name = parts[0].Trim();
             name.ValidatePlatformName();
 
-            var advertisement = new Advertisement(name);
-
-            var locations = parts[1].Split(TextSeparators.SEPARATOR_COMMA)
+            var locationPaths = parts[1].Split(TextSeparators.SEPARATOR_COMMA)
                 .Select(locationPath =>
                 {
                     locationPath.ValidateLocation();
                     locationPath = locationPath.NormalizeLocationPath();
-                    return new Location(locationPath);
-                }).ToList();
+                    return locationPath;
+                });
 
-            if (locations.Count == 0)
+            if (locationPaths.Count() == 0)
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
 
-            return new AdvertisingPlatform(advertisement, locations);
+            return new ParseDataDTO(name, locationPaths);
         }
     }
 }

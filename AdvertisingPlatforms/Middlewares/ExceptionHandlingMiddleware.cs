@@ -3,6 +3,7 @@ using AdvertisingPlatforms.Base.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Extensions;
+using AdvertisingPlatforms.Web.HttpModels;
 
 namespace AdvertisingPlatforms.Web.Middlewares
 {
@@ -33,6 +34,14 @@ namespace AdvertisingPlatforms.Web.Middlewares
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
             }
+            catch (EntityAlreadyExistsExeption exp) 
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.Conflict);
+            }
+            catch (EntityNotFoundExeption exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.NotFound);
+            }
             catch (ArgumentException exp)
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
@@ -53,12 +62,11 @@ namespace AdvertisingPlatforms.Web.Middlewares
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception, HttpStatusCode code)
         {
-            var errorResponse = new ProblemDetails
+            var errorResponse = new ErrorResponse
             {
-                Status = (int)code,
-                Title = exception.Message,
-                Instance = context.Request.Path,
-                Type = code.ToString()
+                StatusCode = (int)code,
+                Type = code.ToString(),
+                Message = exception.Message
             };
 
 

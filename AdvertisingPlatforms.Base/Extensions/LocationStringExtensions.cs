@@ -10,8 +10,10 @@ namespace AdvertisingPlatforms.Base.Extensions
             if (string.IsNullOrEmpty(location)) return $"{TextSeparators.SLASH}";
 
             var trimmed = location.Trim().ToLowerInvariant();
-            if (!trimmed.StartsWith(TextSeparators.SLASH)) trimmed = TextSeparators.SLASH + trimmed;
-            return trimmed.TrimEnd(TextSeparators.SLASH);
+            if (!trimmed.StartsWith(TextSeparators.SLASH)) 
+                trimmed = TextSeparators.SLASH + trimmed;
+            
+            return trimmed;
         }
 
         public static IReadOnlyList<string> GetPrefixes(this string location)

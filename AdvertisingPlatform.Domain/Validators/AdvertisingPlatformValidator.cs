@@ -5,9 +5,9 @@ using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.Domain.Validators
 {
-    public class AdvertisingPlatformValidator : IValidator<AdvertisingPlatform>
+    public class AdvertisingPlatformValidator : IValidator<AdvertisingPlatformDb>
     {
-        public void Validate(IEnumerable<AdvertisingPlatform>? platforms)
+        public void Validate(IEnumerable<AdvertisingPlatformDb>? platforms)
         {
             if (platforms == null)
                 throw new ArgumentNullException(ErrorMessages.NULL_PLATFORMS_COLLECTION, nameof(platforms));
@@ -20,16 +20,13 @@ namespace AdvertisingPlatforms.Domain.Validators
                 Validate(platform);
             }
         }
-        public void Validate(AdvertisingPlatform? platform)
+        public void Validate(AdvertisingPlatformDb? platform)
         {
             if (platform == null)
                 throw new ArgumentNullException(nameof(platform));
 
             if (string.IsNullOrWhiteSpace(platform.Advertisement.Name))
                 throw new DomainValidationException(ErrorMessages.EMPTY_PLATFORM_NAME);
-
-            if (!platform.Locations.Any())
-                throw new DomainValidationException( ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
         }
     }
 }
