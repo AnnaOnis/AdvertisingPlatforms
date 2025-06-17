@@ -1,4 +1,4 @@
-﻿namespace AdvertisingPlatforms.Web.HttpModels
+﻿namespace AdvertisingPlatforms.Web.HttpModels.Responses
 {
     public class ErrorResponse
     {

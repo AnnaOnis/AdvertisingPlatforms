@@ -28,7 +28,7 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="platform">The platform to be added.</param>
         /// <returns>The added platform.</returns>
-        Task AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken);
+        Task<AdvertisingPlatform> AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing platform

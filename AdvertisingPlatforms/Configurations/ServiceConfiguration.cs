@@ -1,6 +1,5 @@
 ﻿using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
-using AdvertisingPlatforms.Domain.Validators;
 using AdvertisingPlatforms.Domain.Parser;
 using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
@@ -11,6 +10,10 @@ using AdvertisingPlatforms.DAL.Repositories.DataBase;
 using Microsoft.EntityFrameworkCore;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Domain.Fabrics;
+using FluentValidation;
+using AdvertisingPlatforms.Web.Validators;
+using AdvertisingPlatforms.Web.HttpModels.Requests;
+using FluentValidation.AspNetCore;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -20,6 +23,7 @@ namespace AdvertisingPlatforms.Web.Configurations
         {
             AddInfrastructure(services);
             AddApplicationComponents(services, config);
+            AddFluentValidation(services);
         }
 
         private static void AddInfrastructure(IServiceCollection services)
@@ -35,6 +39,18 @@ namespace AdvertisingPlatforms.Web.Configurations
             AddDomainServices(services);
             AddDomainModelFactories(services);
             AddRepositories(services, config);
+        }
+
+        private static void AddFluentValidation(IServiceCollection services)
+        {
+            services.AddFluentValidationAutoValidation();
+            services.AddFluentValidationClientsideAdapters();
+            
+            services.AddScoped<IValidator<AdvertisingPlatformRequest>, AdvertisingPlatformRequestValidator>();
+            services.AddScoped<IValidator<SearchPlatformsRequest>, SearchPlatformsRequestValidator>();
+            services.AddScoped<IValidator<UploadFileRequest>, UploadFileRequestValidator>();
+            services.AddScoped<IValidator<LocationRequest>, LocationRequestValidator>();
+            services.AddScoped<IValidator<AdvertisementRequest>, AdvertisementRequestValidator>();
         }
 
         private static void AddLogging(IServiceCollection services)
@@ -57,10 +73,9 @@ namespace AdvertisingPlatforms.Web.Configurations
         private static void AddDomainServices(IServiceCollection services)
         {       
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
+            services.AddScoped<ILocationService, LocationService>();
+            services.AddScoped<IAdvertisementService, AdvertisementService>();
             services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
-            services.AddScoped<IValidator<LocationDb>, LocationValidator>()
-                .AddScoped<IValidator<AdvertisingPlatformDb>, AdvertisingPlatformValidator>()
-                .AddScoped<IFileDataValidator<IFileData>, FileDataValidator>();
             services.AddScoped<IUploadDataService, UploadDataService>();
         }
 

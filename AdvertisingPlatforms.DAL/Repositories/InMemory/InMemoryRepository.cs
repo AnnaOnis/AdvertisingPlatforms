@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
@@ -65,6 +64,11 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             _entityById[entity.Id] = entity;
 
             return Task.CompletedTask;
+        }
+
+        public virtual Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_entityById.ContainsKey(id));
         }
     }
 }

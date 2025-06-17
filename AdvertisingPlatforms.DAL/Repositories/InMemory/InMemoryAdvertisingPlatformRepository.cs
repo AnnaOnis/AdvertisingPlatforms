@@ -21,8 +21,18 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 
         public override async Task<AdvertisingPlatformDb> AddAsync(AdvertisingPlatformDb platform, CancellationToken cancellationToken)
         {
-            await base.AddAsync(platform, cancellationToken);
+            if (_entityById.ContainsKey(platform.Id))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + platform.Id);
+            }
 
+            if (await ExistsAsync(platform.AdvertisementId, platform.LocationId, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(
+                    $"Advertising platform with AdvertisementId={platform.AdvertisementId} and LocationId={platform.LocationId} already exists");
+            }
+
+            await base.AddAsync(platform, cancellationToken);
             await AddPlatformToLocationPrefixes(platform);
             return platform;
         }

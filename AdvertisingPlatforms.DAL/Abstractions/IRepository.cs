@@ -1,5 +1,4 @@
-﻿
-namespace AdvertisingPlatforms.DAL.Abstractions
+﻿namespace AdvertisingPlatforms.DAL.Abstractions
 {
     public interface IRepository<TEntity> where TEntity : class, IEntityDb
     {
@@ -9,5 +8,6 @@ namespace AdvertisingPlatforms.DAL.Abstractions
         Task AddRangeAsync(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken);
         Task UpdateAsync(TEntity entity, CancellationToken cancellationToken);
         Task DeleteAsync(Guid id, CancellationToken cancellationToken);
+        Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
     }
 }

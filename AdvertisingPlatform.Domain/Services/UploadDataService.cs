@@ -13,17 +13,14 @@ namespace AdvertisingPlatforms.Domain.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAdvertisingPlatformParser _fileParser;
-        private readonly IFileDataValidator<IFileData> _fileDataValidator;
         private readonly ILogger<UploadDataService> _logger;
 
         public UploadDataService(IUnitOfWork unitOfWork,
             IAdvertisingPlatformParser fileParser,
-            IFileDataValidator<IFileData> fileDataValidator,
             ILogger<UploadDataService> logger)
         {
             _unitOfWork = unitOfWork;
             _fileParser = fileParser;
-            _fileDataValidator = fileDataValidator;
             _logger = logger;
         }
 
@@ -31,7 +28,6 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, fileData.FileName);
             
-            _fileDataValidator.Validate(fileData);
             using var stream = await fileData.FileToMemoryStreamAsync(cancellationToken);
             var parseDataItems = _fileParser.ParseFile(stream);
 

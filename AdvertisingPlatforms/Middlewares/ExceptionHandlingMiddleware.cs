@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using AdvertisingPlatforms.Base.Exceptions;
-using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Extensions;
-using AdvertisingPlatforms.Web.HttpModels;
+using FluentValidation;
+using AdvertisingPlatforms.Web.HttpModels.Responses;
 
 namespace AdvertisingPlatforms.Web.Middlewares
 {

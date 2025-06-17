@@ -3,6 +3,7 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Extensions;
+using AdvertisingPlatforms.Web.HttpModels.Requests;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -32,7 +33,6 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<IReadOnlyCollection<AdvertisingPlatform>>> GetAllPlatforms(CancellationToken cancellationToken)
         {
             var platforms = await _advertisingPlatformService.GetAllPlatforms(cancellationToken);
-
             return Ok(platforms);
         }
 
@@ -48,33 +48,35 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<AdvertisingPlatform>> GetPlatformById(Guid id, CancellationToken cancellationToken)
         {
             var platform = await _advertisingPlatformService.GetById(id, cancellationToken);
-
             return Ok(platform);
         }
 
         /// <summary>
         /// Search platforms by location
         /// </summary>
-        /// <param name="locationPath">Location in /region/city format</param>
+        /// <param name="request">Search parameters</param>
         /// <response code="200">Success response</response>
-        /// <response code="400">Invalid location format</response>
+        /// <response code="400">Invalid request parameters</response>
         [HttpGet("search")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IReadOnlyList<string>>> GetPlatformsByLocation([FromQuery] string locationPath,
-            [FromQuery] string? sortBy,
-            [FromQuery] bool isAsc,
+        public async Task<ActionResult<IReadOnlyList<AdvertisingPlatform>>> GetPlatformsByLocation(
+            [FromQuery] SearchPlatformsRequest request,
             CancellationToken cancellationToken)
         { 
-             var platforms = await _advertisingPlatformService.Search(locationPath.NormalizeLocationPath(), cancellationToken, sortBy, isAsc);
+            var platforms = await _advertisingPlatformService.Search(
+                request.LocationPath.NormalizeLocationPath(), 
+                cancellationToken, 
+                request.SortBy, 
+                request.IsAsc);
 
-             return Ok(platforms);
+            return Ok(platforms);
         }
 
         /// <summary>
         /// Add new platform
         /// </summary>
-        /// <param name="platform">Platform data</param>
+        /// <param name="request">Platform data</param>
         /// <response code="201">Platform created successfully</response>
         /// <response code="400">Invalid platform data</response>
         /// <response code="409">Platform already exists</response>
@@ -82,8 +84,18 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
-        public async Task<ActionResult<AdvertisingPlatform>> AddPlatform([FromBody] AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public async Task<ActionResult<AdvertisingPlatform>> AddPlatform(
+            [FromBody] AdvertisingPlatformRequest request, 
+            CancellationToken cancellationToken)
         {
+            var platform = new AdvertisingPlatform(
+                Guid.Empty,
+                request.AdvertisementId,
+                request.LocationId,
+                string.Empty, 
+                string.Empty 
+            );
+
             await _advertisingPlatformService.AddPlatform(platform, cancellationToken);
 
             return CreatedAtAction(nameof(GetPlatformById), new { id = platform.Id }, platform);
@@ -92,7 +104,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <summary>
         /// Update existing platform
         /// </summary>
-        /// <param name="platform">Updated platform data</param>
+        /// <param name="id">Platform ID</param>
+        /// <param name="request">Updated platform data</param>
         /// <response code="200">Platform updated successfully</response>
         /// <response code="400">Invalid platform data</response>
         /// <response code="404">Platform not found</response>
@@ -100,8 +113,19 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> UpdatePlatform([FromBody] AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public async Task<ActionResult> UpdatePlatform(
+            Guid id,
+            [FromBody] AdvertisingPlatformRequest request, 
+            CancellationToken cancellationToken)
         {
+            var platform = new AdvertisingPlatform(
+                id,
+                request.AdvertisementId,
+                request.LocationId,
+                string.Empty, 
+                string.Empty  
+            );
+
             await _advertisingPlatformService.UpdatePlatform(platform, cancellationToken);
 
             return Ok();
@@ -119,7 +143,6 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult> DeletePlatform(Guid id, CancellationToken cancellationToken)
         {
             await _advertisingPlatformService.DeletePlatform(id, cancellationToken);
-
             return NoContent();
         }
     }

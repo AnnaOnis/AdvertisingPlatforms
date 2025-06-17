@@ -1,5 +1,6 @@
-﻿
-using AdvertisingPlatforms.Base.Extensions;
+﻿using AdvertisingPlatforms.Base.Extensions;
+using AdvertisingPlatforms.Base.Exceptions;
+using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.DAL.Delegates;
 using AdvertisingPlatforms.DAL.Entities;
@@ -50,6 +51,22 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
                 .Include(platform => platform.Advertisement)
                 .Include(platform => platform.Location)
                 .ToListAsync(cancellationToken);
+        }
+
+        public override async Task AddAsync(AdvertisingPlatformDb platformDb, CancellationToken cancellationToken)
+        {
+            if (await ExistsAsync(platformDb.Id, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + platformDb.Id);
+            }
+
+            if (await ExistsAsync(platformDb.AdvertisementId, platformDb.LocationId, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(
+                    $"Advertising platform with AdvertisementId={platformDb.AdvertisementId} and LocationId={platformDb.LocationId} already exists");
+            }
+
+            await Entities.AddAsync(platformDb, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)

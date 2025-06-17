@@ -2,6 +2,9 @@
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using AdvertisingPlatforms.Web.HttpModels.Requests;
+using FluentValidation;
+using AdvertisingPlatforms.Web.Validators;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -10,7 +13,10 @@ namespace AdvertisingPlatforms.Web.Controllers
         private readonly IUploadDataService _uploadDataService;
         private readonly ILogger<AdvertisingPlatformsController> _logger;
 
-        public UploadDataController(IUploadDataService uploadDataService, ILogger<AdvertisingPlatformsController> logger)
+        public UploadDataController(
+            IUploadDataService uploadDataService, 
+            ILogger<AdvertisingPlatformsController> logger,
+            IValidator<UploadFileRequest> validator)
         {
             _uploadDataService = uploadDataService;
             _logger = logger;
@@ -19,15 +25,18 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <summary>
         /// Upload platform data from file
         /// </summary>
-        /// <param name="file">Text file in .txt format</param>
+        /// <param name="request">File upload request</param>
         /// <response code="200">Data uploaded successfully</response>
         /// <response code="400">Invalid file format</response>
         [HttpPost("upload")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult> UploadData(IFormFile file, CancellationToken cancellationToken)
+        public async Task<ActionResult> UploadData(
+            [FromForm] UploadFileRequest request, 
+            CancellationToken cancellationToken)
         {
-            var fileData = new FormFileAdapter(file);
+
+            var fileData = new FormFileAdapter(request.File);
 
             await _uploadDataService.UploadDataFromFile(fileData, cancellationToken);
 

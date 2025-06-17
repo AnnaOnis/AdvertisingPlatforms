@@ -1,5 +1,7 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using AdvertisingPlatforms.Base.Exceptions;
+using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 {
@@ -26,15 +28,19 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 
         public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken)
         {
+            if (await ExistsAsync(entity.Id, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + entity.Id);
+            }
+            
             await Entities.AddAsync(entity, cancellationToken);
-
         }
 
         public virtual async Task AddRangeAsync(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
         {
             foreach (var entity in entities)
             {
-                await Entities.AddAsync(entity, cancellationToken);
+                await AddAsync(entity, cancellationToken);
             }
         }
 
@@ -48,6 +54,11 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
             return Task.CompletedTask;
+        }
+
+        public virtual async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return await Entities.AnyAsync(entity => entity.Id == id, cancellationToken);
         }
     }
 }

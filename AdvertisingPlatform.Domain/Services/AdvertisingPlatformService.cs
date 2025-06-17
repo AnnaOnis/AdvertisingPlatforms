@@ -38,11 +38,13 @@ namespace AdvertisingPlatforms.Domain.Services
             return platforms;
         }
 
-        public async Task AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public async Task<AdvertisingPlatform> AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken)
         {
             var platformDb = new AdvertisingPlatformDb(platform.AdvertisementId, platform.LocationId);
             await _unitOfWork.AdvertisingPlatformRepository.AddAsync(platformDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
+
+            return _factory.Create(platformDb);
         }
 
         public async Task UpdatePlatform(AdvertisingPlatform platform, CancellationToken cancellationToken)
