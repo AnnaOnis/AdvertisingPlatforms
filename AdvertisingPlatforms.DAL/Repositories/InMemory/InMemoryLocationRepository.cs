@@ -11,21 +11,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryLocationRepository() { }
 
-        public override Task AddAsync(LocationDb locationDb, CancellationToken cancellationToken)
-        {
-            if (_entityById.ContainsKey(locationDb.Id))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + locationDb.Id);
-            }
-
-            if (ExistsByPath(locationDb.Path))
-            {
-                throw new EntityAlreadyExistsExeption($"Location with path '{locationDb.Path}' already exists");
-            }
-
-            return base.AddAsync(locationDb, cancellationToken);
-        }
-
         public Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken)
         {
             if(string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
@@ -37,7 +22,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 
         public Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken)
         {
-            if(string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+            if(string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
 
             return Task.FromResult(ExistsByPath(path));
         }

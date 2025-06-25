@@ -6,6 +6,7 @@ using AdvertisingPlatforms.DAL.Delegates;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Constants;
+using System;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -26,6 +27,10 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<AdvertisingPlatform> GetById(Guid platformId, CancellationToken cancellationToken)
         {
+            if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + platformId);
+            }
             var platformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
             var platform = _factory.Create(platformDb);
             return platform;
@@ -38,31 +43,52 @@ namespace AdvertisingPlatforms.Domain.Services
             return platforms;
         }
 
-        public async Task<AdvertisingPlatform> AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public async Task<AdvertisingPlatform> CreatePlatform(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
-            var platformDb = new AdvertisingPlatformDb(platform.AdvertisementId, platform.LocationId);
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken) ||
+                !await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND);
+            }
+            if (await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocationAsync(advertisementId, 
+                locationId, 
+                cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS);
+            }
+            var platformDb = new AdvertisingPlatformDb(advertisementId, locationId);
             await _unitOfWork.AdvertisingPlatformRepository.AddAsync(platformDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
 
             return _factory.Create(platformDb);
         }
 
-        public async Task UpdatePlatform(AdvertisingPlatform platform, CancellationToken cancellationToken)
+        public async Task UpdatePlatform(Guid platformId, Guid newAdvertisementId, Guid newLocationId, CancellationToken cancellationToken)
         {
-            var platformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platform.Id, cancellationToken);
-            platformDb.AdvertisementId = platform.AdvertisementId;
-            platformDb.LocationId = platform.LocationId;
-            await _unitOfWork.AdvertisingPlatformRepository.UpdateAsync(platformDb, cancellationToken);
+            if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken) ||
+                !await _unitOfWork.AdvertisementRepository.ExistsAsync(newAdvertisementId, cancellationToken) ||
+                !await _unitOfWork.LocationRepository.ExistsAsync(newLocationId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND);
+            }
+            var updatingPlatformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
+            updatingPlatformDb.AdvertisementId = newAdvertisementId;
+            updatingPlatformDb.LocationId = newLocationId;
+            await _unitOfWork.AdvertisingPlatformRepository.UpdateAsync(updatingPlatformDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeletePlatform(Guid platformId, CancellationToken cancellationToken)
         {
+            if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + platformId);
+            }
             await _unitOfWork.AdvertisingPlatformRepository.DeleteAsync(platformId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IReadOnlyCollection<AdvertisingPlatform>> Search(string locationPath, 
+        public async Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(string locationPath, 
             CancellationToken cancellationToken, 
             string? sortBy, 
             bool isAsc)

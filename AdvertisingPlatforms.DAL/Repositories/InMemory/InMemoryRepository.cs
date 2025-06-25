@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.DAL.Abstractions;
-using AdvertisingPlatforms.DAL.Entities;
 
 namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 {
@@ -56,10 +54,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 
         public virtual Task UpdateAsync(TEntity entity, CancellationToken cancellationToken)
         {
-            if(!_entityById.TryGetValue(entity.Id, out var existingEntity))
-            {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND +  entity.Id);
-            }
 
             _entityById[entity.Id] = entity;
 

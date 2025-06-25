@@ -2,6 +2,9 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
+using AutoMapper;
+using AdvertisingPlatforms.Web.HttpModels.Responses;
+using AdvertisingPlatforms.DAL.Entities;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -13,13 +16,12 @@ namespace AdvertisingPlatforms.Web.Controllers
     public class AdvertisementsController : ControllerBase
     {
         private readonly IAdvertisementService _advertisementService;
-        private readonly ILogger<AdvertisementsController> _logger;
+        private readonly IMapper _mapper;
 
-        public AdvertisementsController(IAdvertisementService service, 
-            ILogger<AdvertisementsController> logger)
+        public AdvertisementsController(IAdvertisementService service, IMapper mapper)
         {
             _advertisementService = service;
-            _logger = logger;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -31,7 +33,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<IReadOnlyCollection<Advertisement>>> GetAllAdvertisements(CancellationToken cancellationToken)
         {
             var advertisements = await _advertisementService.GetAllAdvertisements(cancellationToken);
-            return Ok(advertisements);
+            var response = _mapper.Map<AdvertisementResponse[]>(advertisements);
+            return Ok(response);
         }
 
         /// <summary>
@@ -46,7 +49,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<Advertisement>> GetAdvertisementById(Guid id, CancellationToken cancellationToken)
         {
             var advertisement = await _advertisementService.GetById(id, cancellationToken);
-            return Ok(advertisement);
+            var response = _mapper.Map<AdvertisementResponse>(advertisement);
+            return Ok(response);
         }
 
         /// <summary>
@@ -55,16 +59,17 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <param name="name">Advertisement name</param>
         /// <response code="200">Success response</response>
         /// <response code="404">Advertisement not found</response>
-        [HttpGet("find")]
+        [HttpGet("[action]")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<Advertisement>> FindAdvertisementByName([FromQuery] AdvertisementRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<Advertisement>> FindAdvertisementByName([FromQuery] string name, CancellationToken cancellationToken)
         {
-            var advertisement = await _advertisementService.FindByName(request.Name, cancellationToken);
+            var advertisement = await _advertisementService.FindByName(name, cancellationToken);
             if (advertisement == null)
                 return NotFound();
-                
-            return Ok(advertisement);
+
+            var response = _mapper.Map<AdvertisementResponse>(advertisement);
+            return Ok(response);
         }
 
         /// <summary>
@@ -79,17 +84,13 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
         public async Task<ActionResult<Advertisement>> AddAdvertisement(
-            [FromBody] AdvertisementRequest request, 
+            [FromBody] CreateAdvertisementRequest request, 
             CancellationToken cancellationToken)
         {
-            var advertisement = new Advertisement(
-                Guid.Empty,
-                request.Name
-            );
+            var createdAdvertisement = await _advertisementService.CreateAdvertisement(request.Name, cancellationToken);
 
-            var createdAdvertisement = await _advertisementService.AddAdvertisement(advertisement, cancellationToken);
-
-            return CreatedAtAction(nameof(GetAdvertisementById), new { id = createdAdvertisement.Id }, createdAdvertisement);
+            var response = _mapper.Map<AdvertisementResponse>(createdAdvertisement);
+            return Ok(response);
         }
 
         /// <summary>
@@ -100,22 +101,15 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <response code="200">Advertisement updated successfully</response>
         /// <response code="400">Invalid advertisement data</response>
         /// <response code="404">Advertisement not found</response>
-        [HttpPut("{id:guid}")]
+        [HttpPut]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult> UpdateAdvertisement(
-            Guid id,
-            [FromBody] AdvertisementRequest request, 
+            [FromBody] UpdateAdvertisementRequest request, 
             CancellationToken cancellationToken)
         {
-            var advertisement = new Advertisement(
-                id,
-                request.Name
-            );
-
-            await _advertisementService.UpdateAdvertisement(advertisement, cancellationToken);
-
+            await _advertisementService.UpdateAdvertisement(request.Id, request.Name, cancellationToken);
             return Ok();
         }
 

@@ -12,6 +12,6 @@ namespace AdvertisingPlatforms.DAL.Abstractions
             CancellationToken cancellationToken, 
             AdvertisingPlatformsSortDelegate? sortDelegate = null);
 
-        Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken);
+        Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken);
     }
 }

@@ -4,9 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace AdvertisingPlatforms.Web.Validators
 {
-    public class AdvertisementRequestValidator : AbstractValidator<AdvertisementRequest>
+    public class CreateAdvertisementRequestValidator : AbstractValidator<CreateAdvertisementRequest>
     {
-        public AdvertisementRequestValidator()
+        public CreateAdvertisementRequestValidator()
         {
             RuleFor(x => x.Name)
                 .NotEmpty()

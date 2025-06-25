@@ -27,12 +27,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         }
 
         public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken)
-        {
-            if (await ExistsAsync(entity.Id, cancellationToken))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + entity.Id);
-            }
-            
+        {           
             await Entities.AddAsync(entity, cancellationToken);
         }
 

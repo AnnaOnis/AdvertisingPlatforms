@@ -21,17 +21,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 
         public override async Task<AdvertisingPlatformDb> AddAsync(AdvertisingPlatformDb platform, CancellationToken cancellationToken)
         {
-            if (_entityById.ContainsKey(platform.Id))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + platform.Id);
-            }
-
-            if (await ExistsAsync(platform.AdvertisementId, platform.LocationId, cancellationToken))
-            {
-                throw new EntityAlreadyExistsExeption(
-                    $"Advertising platform with AdvertisementId={platform.AdvertisementId} and LocationId={platform.LocationId} already exists");
-            }
-
             await base.AddAsync(platform, cancellationToken);
             await AddPlatformToLocationPrefixes(platform);
             return platform;
@@ -139,7 +128,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             return Task.CompletedTask;
         }
 
-        public async Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
+        public async Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
             return _entityById.Values.Any(p => p.AdvertisementId == advertisementId && p.LocationId == locationId);
         }

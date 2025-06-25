@@ -17,12 +17,11 @@ namespace AdvertisingPlatforms.DAL.Entities
         public ICollection<AdvertisingPlatformDb> AdvertisingPlatforms { get; set; } = new HashSet<AdvertisingPlatformDb>();
 
 
-        public LocationDb(string path, Guid? parentId, LocationDb? parent)
+        public LocationDb(string path, Guid? parentId)
         {
             Id = Guid.NewGuid();
             Path = path;
             ParentId = parentId;
-            Parent = parent;
         }
 
         protected LocationDb()

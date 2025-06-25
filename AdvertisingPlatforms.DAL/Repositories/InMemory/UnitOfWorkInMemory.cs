@@ -12,11 +12,14 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         public IAdvertisingPlatformRepository AdvertisingPlatformRepository => _advertisingPlatformRepository;
         public ILocationRepository LocationRepository => _locationRepository;
 
-        public UnitOfWorkInMemory()
+        public UnitOfWorkInMemory(        
+            IAdvertisementRepository advertisementRepository,
+            IAdvertisingPlatformRepository advertisingPlatformRepository,
+            ILocationRepository locationRepository)
         {
-            _advertisementRepository = new InMemoryAdvertisementRepository();
-            _advertisingPlatformRepository = new InMemoryAdvertisingPlatformRepository();
-            _locationRepository = new InMemoryLocationRepository();
+            _advertisementRepository = advertisementRepository;
+            _advertisingPlatformRepository = advertisingPlatformRepository;
+            _locationRepository = locationRepository;
         }
 
         public Task<int> SaveChangesAsync()

@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
+using AutoMapper;
+using AdvertisingPlatforms.Web.HttpModels.Responses;
+using System;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -15,13 +18,12 @@ namespace AdvertisingPlatforms.Web.Controllers
     public class AdvertisingPlatformsController : ControllerBase
     {
         private readonly IAdvertisingPlatformService _advertisingPlatformService;
-        private readonly ILogger<AdvertisingPlatformsController> _logger;
+        private readonly IMapper _mapper;
 
-        public AdvertisingPlatformsController(IAdvertisingPlatformService service, 
-            ILogger<AdvertisingPlatformsController> logger)
+        public AdvertisingPlatformsController(IAdvertisingPlatformService service, IMapper mapper)
         {
             _advertisingPlatformService = service;
-            _logger = logger;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -33,7 +35,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<IReadOnlyCollection<AdvertisingPlatform>>> GetAllPlatforms(CancellationToken cancellationToken)
         {
             var platforms = await _advertisingPlatformService.GetAllPlatforms(cancellationToken);
-            return Ok(platforms);
+            var response = _mapper.Map<AdvertisingPlatformResponse[]>(platforms);
+            return Ok(response);
         }
 
         /// <summary>
@@ -48,7 +51,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<AdvertisingPlatform>> GetPlatformById(Guid id, CancellationToken cancellationToken)
         {
             var platform = await _advertisingPlatformService.GetById(id, cancellationToken);
-            return Ok(platform);
+            var response = _mapper.Map<AdvertisingPlatformResponse>(platform);
+            return Ok(response);
         }
 
         /// <summary>
@@ -57,20 +61,20 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <param name="request">Search parameters</param>
         /// <response code="200">Success response</response>
         /// <response code="400">Invalid request parameters</response>
-        [HttpGet("search")]
+        [HttpPost("[action]")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<IReadOnlyList<AdvertisingPlatform>>> GetPlatformsByLocation(
-            [FromQuery] SearchPlatformsRequest request,
+        public async Task<ActionResult<IReadOnlyList<AdvertisingPlatform>>> FindPlatformsByLocationPath(
+            [FromBody] SearchPlatformsRequest request,
             CancellationToken cancellationToken)
         { 
-            var platforms = await _advertisingPlatformService.Search(
+            var platforms = await _advertisingPlatformService.FindByLocation(
                 request.LocationPath.NormalizeLocationPath(), 
                 cancellationToken, 
                 request.SortBy, 
                 request.IsAsc);
-
-            return Ok(platforms);
+            var response = _mapper.Map<AdvertisingPlatformResponse[]>(platforms);
+            return Ok(response);
         }
 
         /// <summary>
@@ -85,20 +89,13 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
         public async Task<ActionResult<AdvertisingPlatform>> AddPlatform(
-            [FromBody] AdvertisingPlatformRequest request, 
+            [FromBody] CreateAdvertisingPlatformRequest request, 
             CancellationToken cancellationToken)
         {
-            var platform = new AdvertisingPlatform(
-                Guid.Empty,
-                request.AdvertisementId,
-                request.LocationId,
-                string.Empty, 
-                string.Empty 
-            );
+            var createdPlatform = await _advertisingPlatformService.CreatePlatform(request.AdvertisementId, request.LocationId, cancellationToken);
 
-            await _advertisingPlatformService.AddPlatform(platform, cancellationToken);
-
-            return CreatedAtAction(nameof(GetPlatformById), new { id = platform.Id }, platform);
+            var response = _mapper.Map<AdvertisingPlatformResponse>(createdPlatform);
+            return Ok(response);
         }
 
         /// <summary>
@@ -109,24 +106,18 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <response code="200">Platform updated successfully</response>
         /// <response code="400">Invalid platform data</response>
         /// <response code="404">Platform not found</response>
-        [HttpPut("{id:guid}")]
+        [HttpPut]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult> UpdatePlatform(
-            Guid id,
-            [FromBody] AdvertisingPlatformRequest request, 
+            [FromBody] UpdateAdvertisingPlatformRequest request, 
             CancellationToken cancellationToken)
         {
-            var platform = new AdvertisingPlatform(
-                id,
+            await _advertisingPlatformService.UpdatePlatform(request.Id,
                 request.AdvertisementId,
-                request.LocationId,
-                string.Empty, 
-                string.Empty  
-            );
-
-            await _advertisingPlatformService.UpdatePlatform(platform, cancellationToken);
+                request.LocationId, 
+                cancellationToken);
 
             return Ok();
         }

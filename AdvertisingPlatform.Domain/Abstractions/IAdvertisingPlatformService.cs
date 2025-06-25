@@ -28,14 +28,14 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="platform">The platform to be added.</param>
         /// <returns>The added platform.</returns>
-        Task<AdvertisingPlatform> AddPlatform(AdvertisingPlatform platform, CancellationToken cancellationToken);
+        Task<AdvertisingPlatform> CreatePlatform(Guid advertisementId, Guid locationId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing platform
         /// </summary>
         /// <param name="platform">The platform to be updated.</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        Task UpdatePlatform(AdvertisingPlatform platform, CancellationToken cancellationToken);
+        Task UpdatePlatform(Guid platformId, Guid newAdvertisementId, Guid newLocationId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes a platform
@@ -50,7 +50,7 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="location">Target location</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Collection of matching platforms</returns>
-        Task<IReadOnlyCollection<AdvertisingPlatform>> Search(string locationPath,
+        Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(string locationPath,
             CancellationToken cancellationToken,
             string? sortBy = null,
             bool isAsc = true);

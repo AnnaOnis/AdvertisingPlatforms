@@ -4,9 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace AdvertisingPlatforms.Web.Validators
 {
-    public class LocationRequestValidator : AbstractValidator<LocationRequest>
+    public class CreateLocationRequestValidator : AbstractValidator<CreateLocationRequest>
     {
-        public LocationRequestValidator()
+        public CreateLocationRequestValidator()
         {
             RuleFor(x => x.Path)
                 .NotEmpty()

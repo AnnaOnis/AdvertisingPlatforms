@@ -1,6 +1,6 @@
 namespace AdvertisingPlatforms.Web.HttpModels.Requests
 {
-    public class AdvertisingPlatformRequest
+    public class CreateAdvertisingPlatformRequest
     {
         public Guid AdvertisementId { get; set; }
         public Guid LocationId { get; set; }

@@ -11,21 +11,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryAdvertisementRepository() { }
 
-        public override Task AddAsync(AdvertisementDb advertisementDb, CancellationToken cancellationToken)
-        {
-            if (_entityById.ContainsKey(advertisementDb.Id))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + advertisementDb.Id);
-            }
-
-            if (ExistsByName(advertisementDb.Name))
-            {
-                throw new EntityAlreadyExistsExeption($"Advertisement with name '{advertisementDb.Name}' already exists");
-            }
-
-            return base.AddAsync(advertisementDb, cancellationToken);
-        }
-
         public Task<AdvertisementDb?> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
             if(string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));

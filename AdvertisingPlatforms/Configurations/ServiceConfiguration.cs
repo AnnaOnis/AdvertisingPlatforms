@@ -39,6 +39,7 @@ namespace AdvertisingPlatforms.Web.Configurations
             AddDomainServices(services);
             AddDomainModelFactories(services);
             AddRepositories(services, config);
+            services.AddAutoMapper(typeof(Program).Assembly);
         }
 
         private static void AddFluentValidation(IServiceCollection services)
@@ -46,11 +47,14 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddFluentValidationAutoValidation();
             services.AddFluentValidationClientsideAdapters();
             
-            services.AddScoped<IValidator<AdvertisingPlatformRequest>, AdvertisingPlatformRequestValidator>();
+            services.AddScoped<IValidator<CreateAdvertisingPlatformRequest>, CreateAdvertisingPlatformRequestValidator>();
+            services.AddScoped<IValidator<UpdateAdvertisingPlatformRequest>, UpdateAdvertisingPlatformRequestValidator>();
             services.AddScoped<IValidator<SearchPlatformsRequest>, SearchPlatformsRequestValidator>();
             services.AddScoped<IValidator<UploadFileRequest>, UploadFileRequestValidator>();
-            services.AddScoped<IValidator<LocationRequest>, LocationRequestValidator>();
-            services.AddScoped<IValidator<AdvertisementRequest>, AdvertisementRequestValidator>();
+            services.AddScoped<IValidator<CreateLocationRequest>, CreateLocationRequestValidator>();
+            services.AddScoped<IValidator<UpdateLocationRequest>, UpdateLocationRequestValidator>();
+            services.AddScoped<IValidator<CreateAdvertisementRequest>, CreateAdvertisementRequestValidator>();
+            services.AddScoped<IValidator<UpdateAdvertisementRequest>, UpdateAdvertisementRequestValidator>();
         }
 
         private static void AddLogging(IServiceCollection services)

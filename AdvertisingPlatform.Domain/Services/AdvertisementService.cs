@@ -3,6 +3,9 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Models;
+using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Base.Exceptions;
+using System.Xml.Linq;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -23,6 +26,10 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement> GetById(Guid advertisementId, CancellationToken cancellationToken)
         {
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+            }
             var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisementId, cancellationToken);
             var advertisement = _factory.Create(advertisementDb);
             return advertisement;
@@ -35,25 +42,41 @@ namespace AdvertisingPlatforms.Domain.Services
             return advertisements;
         }
 
-        public async Task<Advertisement> AddAdvertisement(Advertisement advertisement, CancellationToken cancellationToken)
+        public async Task<Advertisement> CreateAdvertisement(string advertisementName, CancellationToken cancellationToken)
         {
-            var advertisementDb = new AdvertisementDb(advertisement.Name);
+            if (await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(advertisementName, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + advertisementName);
+            }
+            var advertisementDb = new AdvertisementDb(advertisementName);
             await _unitOfWork.AdvertisementRepository.AddAsync(advertisementDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
             
             return _factory.Create(advertisementDb);
         }
 
-        public async Task UpdateAdvertisement(Advertisement advertisement, CancellationToken cancellationToken)
+        public async Task UpdateAdvertisement(Guid advertisementId, string newAdvertisementName, CancellationToken cancellationToken)
         {
-            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisement.Id, cancellationToken);
-            advertisementDb.Name = advertisement.Name;
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+            }
+            if(await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(newAdvertisementName, cancellationToken))
+            {
+                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + newAdvertisementName);
+            }
+            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisementId, cancellationToken);
+            advertisementDb.Name = newAdvertisementName;
             await _unitOfWork.AdvertisementRepository.UpdateAsync(advertisementDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteAdvertisement(Guid advertisementId, CancellationToken cancellationToken)
         {
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+            }
             await _unitOfWork.AdvertisementRepository.DeleteAsync(advertisementId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }

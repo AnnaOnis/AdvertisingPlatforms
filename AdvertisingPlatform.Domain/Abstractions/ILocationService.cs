@@ -28,14 +28,14 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="location">The location to be added.</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The created location with assigned ID.</returns>
-        Task<Location> AddLocation(Location location, CancellationToken cancellationToken);
+        Task<Location> CreateLocation(string locationPath, Guid? parentId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing location
         /// </summary>
         /// <param name="location">The location to be updated.</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        Task UpdateLocation(Location location, CancellationToken cancellationToken);
+        Task UpdateLocation(Guid locationId, string newLocationPath, Guid? newparentId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes a location

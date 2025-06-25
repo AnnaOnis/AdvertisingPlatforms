@@ -69,7 +69,7 @@ namespace AdvertisingPlatforms.Domain.Services
                 }
 
                 var parent = await FindParentLocation(path, locationDictionary, cancellationToken);
-                var location = new LocationDb(path, parent?.Id, parent);
+                var location = new LocationDb(path, parent?.Id);
 
                 locationDictionary.Add(path, location);
                 await _unitOfWork.LocationRepository.AddAsync(location, cancellationToken);
@@ -113,7 +113,7 @@ namespace AdvertisingPlatforms.Domain.Services
             
             if (newParent == null)
             {
-                newParent = new LocationDb(parentPath, null, null);
+                newParent = new LocationDb(parentPath, null);
                 locations.Add(parentPath, newParent);
                 await _unitOfWork.LocationRepository.AddAsync(newParent, cancellationToken);
                 _logger.LogInformation(LogMessages.LOCATION_CREATED, parentPath);
@@ -176,8 +176,7 @@ namespace AdvertisingPlatforms.Domain.Services
                         throw new InvalidOperationException($"Advertisement '{dto.AdvertisementName}' not found");
                     }
 
-                    // Проверяем, существует ли уже такая платформа
-                    var exists = await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(
+                    var exists = await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocationAsync(
                         advertisement.Id, location.Id, cancellationToken);
 
                     if (exists)

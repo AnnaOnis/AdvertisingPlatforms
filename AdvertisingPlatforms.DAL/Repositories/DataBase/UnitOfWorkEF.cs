@@ -9,22 +9,20 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         private readonly IAdvertisingPlatformRepository _advertisingPlatformRepository;
         private readonly ILocationRepository _locationRepository;
 
-        public IAdvertisementRepository AdvertisementRepository
-        {
-            get { return _advertisementRepository ?? new EFAdvertisementRepository(_dbContext); }
-        }
-        public IAdvertisingPlatformRepository AdvertisingPlatformRepository
-        {
-            get { return _advertisingPlatformRepository ?? new EFAdvertisingPlatformRepository(_dbContext); }
-        }
-        public ILocationRepository LocationRepository
-        {
-            get { return _locationRepository ?? new EFLocationRepository(_dbContext); }
-        }
+        public IAdvertisementRepository AdvertisementRepository => _advertisementRepository;
+        public IAdvertisingPlatformRepository AdvertisingPlatformRepository => _advertisingPlatformRepository;
+        public ILocationRepository LocationRepository => _locationRepository;
+  
 
-        public UnitOfWorkEF(AdvertisingPlatformsDbContext dbContext)
+        public UnitOfWorkEF(AdvertisingPlatformsDbContext dbContext, 
+            IAdvertisementRepository advertisementRepository,
+            IAdvertisingPlatformRepository advertisingPlatformRepository,
+            ILocationRepository locationRepository)
         {
             _dbContext = dbContext;
+            _advertisementRepository = advertisementRepository;
+            _advertisingPlatformRepository = advertisingPlatformRepository;
+            _locationRepository = locationRepository;
         }
 
         public async Task<int> SaveChangesAsync()

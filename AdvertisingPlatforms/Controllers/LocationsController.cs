@@ -2,6 +2,9 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
+using AdvertisingPlatforms.Base.Extensions;
+using AutoMapper;
+using AdvertisingPlatforms.DAL.Entities;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -13,13 +16,13 @@ namespace AdvertisingPlatforms.Web.Controllers
     public class LocationsController : ControllerBase
     {
         private readonly ILocationService _locationService;
-        private readonly ILogger<LocationsController> _logger;
+        private readonly IMapper _mapper;
 
-        public LocationsController(ILocationService service, 
-            ILogger<LocationsController> logger)
+        public LocationsController(ILocationService service,
+            IMapper mapper)
         {
             _locationService = service;
-            _logger = logger;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -31,7 +34,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<IReadOnlyCollection<Location>>> GetAllLocations(CancellationToken cancellationToken)
         {
             var locations = await _locationService.GetAllLocations(cancellationToken);
-            return Ok(locations);
+            var response = _mapper.Map<Location[]>(locations);
+            return Ok(response);
         }
 
         /// <summary>
@@ -46,7 +50,8 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult<Location>> GetLocationById(Guid id, CancellationToken cancellationToken)
         {
             var location = await _locationService.GetById(id, cancellationToken);
-            return Ok(location);
+            var response = _mapper.Map<Location>(location);
+            return Ok(response);
         }
 
         /// <summary>
@@ -55,16 +60,18 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <param name="path">Location path</param>
         /// <response code="200">Success response</response>
         /// <response code="404">Location not found</response>
-        [HttpGet("find")]
+        [HttpGet("[action]")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<Location>> FindLocationByPath([FromQuery] LocationRequest request, CancellationToken cancellationToken)
+        public async Task<ActionResult<Location>> FindLocationByPath([FromQuery] string path, CancellationToken cancellationToken)
         {
-            var location = await _locationService.FindByPath(request.Path, cancellationToken);
+            var normalizePath = path.NormalizeLocationPath();
+            var location = await _locationService.FindByPath(normalizePath, cancellationToken);
             if (location == null)
                 return NotFound();
-                
-            return Ok(location);
+
+            var response = _mapper.Map<Location>(location);
+            return Ok(response);
         }
 
         /// <summary>
@@ -79,18 +86,13 @@ namespace AdvertisingPlatforms.Web.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(409)]
         public async Task<ActionResult<Location>> AddLocation(
-            [FromBody] LocationRequest request, 
+            [FromBody] CreateLocationRequest request, 
             CancellationToken cancellationToken)
         {
-            var location = new Location(
-                Guid.Empty,
-                request.Path,
-                request.ParentId
-            );
+            var createdLocation = await _locationService.CreateLocation(request.Path, request.ParentId, cancellationToken);
 
-            var createdLocation = await _locationService.AddLocation(location, cancellationToken);
-
-            return CreatedAtAction(nameof(GetLocationById), new { id = createdLocation.Id }, createdLocation);
+            var response = _mapper.Map<Location>(createdLocation);
+            return Ok(response);
         }
 
         /// <summary>
@@ -101,24 +103,16 @@ namespace AdvertisingPlatforms.Web.Controllers
         /// <response code="200">Location updated successfully</response>
         /// <response code="400">Invalid location data</response>
         /// <response code="404">Location not found</response>
-        [HttpPut("{id:guid}")]
+        [HttpPut]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult> UpdateLocation(
-            Guid id,
-            [FromBody] LocationRequest request, 
+            [FromBody] UpdateLocationRequest request, 
             CancellationToken cancellationToken)
         {
-            var location = new Location(
-                id,
-                request.Path,
-                request.ParentId
-            );
-
-            await _locationService.UpdateLocation(location, cancellationToken);
-
-            return Ok();
+            await _locationService.UpdateLocation(request.Id, request.Path, request.ParentId, cancellationToken);
+            return NoContent();
         }
 
         /// <summary>

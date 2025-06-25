@@ -28,14 +28,14 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// <param name="advertisement">The advertisement to be added.</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The created advertisement with assigned ID.</returns>
-        Task<Advertisement> AddAdvertisement(Advertisement advertisement, CancellationToken cancellationToken);
+        Task<Advertisement> CreateAdvertisement(string advertisementName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an existing advertisement
         /// </summary>
         /// <param name="advertisement">The advertisement to be updated.</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        Task UpdateAdvertisement(Advertisement advertisement, CancellationToken cancellationToken);
+        Task UpdateAdvertisement(Guid advertisemntId, string newAdvertisementName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes an advertisement

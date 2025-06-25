@@ -11,19 +11,14 @@ namespace AdvertisingPlatforms.Domain.Fabrics
             return new AdvertisingPlatform(entityDb.Id, 
                 entityDb.AdvertisementId, 
                 entityDb.LocationId,
-                entityDb.Advertisement?.Name ?? "Unknown",
-                entityDb.Location?.Path ?? "Unknown");
+                entityDb.Advertisement?.Name ?? string.Empty,
+                entityDb.Location?.Path ?? string.Empty);
         }
 
         public IReadOnlyCollection<AdvertisingPlatform> CreateMany(IReadOnlyCollection<AdvertisingPlatformDb> advertisingPlatformDbs)
         {
-            if (advertisingPlatformDbs.Count == 0) return Array.Empty<AdvertisingPlatform>();
-            var result = new List<AdvertisingPlatform>();
-            foreach(var item in advertisingPlatformDbs)
-            {
-                result.Add(Create(item));
-            }
-            return result;
+            if (advertisingPlatformDbs.Count == 0) return [];
+            return advertisingPlatformDbs.Select(Create).ToList();
         }
     }
 }

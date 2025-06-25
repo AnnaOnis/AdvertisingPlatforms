@@ -31,7 +31,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
                     .Include(platform => platform.Location)
                     .Where(p => p.Location.Path.StartsWith(location.Path));
             
-            finalQuery.ToQueryString();
             var platforms = await finalQuery.ToListAsync(cancellationToken);
 
             return platforms;
@@ -53,23 +52,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
                 .ToListAsync(cancellationToken);
         }
 
-        public override async Task AddAsync(AdvertisingPlatformDb platformDb, CancellationToken cancellationToken)
-        {
-            if (await ExistsAsync(platformDb.Id, cancellationToken))
-            {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + platformDb.Id);
-            }
-
-            if (await ExistsAsync(platformDb.AdvertisementId, platformDb.LocationId, cancellationToken))
-            {
-                throw new EntityAlreadyExistsExeption(
-                    $"Advertising platform with AdvertisementId={platformDb.AdvertisementId} and LocationId={platformDb.LocationId} already exists");
-            }
-
-            await Entities.AddAsync(platformDb, cancellationToken);
-        }
-
-        public async Task<bool> ExistsAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
+        public async Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
             var result = await Entities.AnyAsync(
                 platform => platform.LocationId == locationId 
