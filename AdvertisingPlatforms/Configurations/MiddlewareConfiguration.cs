@@ -19,8 +19,7 @@ namespace AdvertisingPlatforms.Web.Configurations
         private static void ConfigureMiddleware(IApplicationBuilder app)
         {    
             app.UseMiddleware<ExceptionHandlingMiddleware>();
-            app.UseMiddleware<ModifyRequestHeadersMiddleware>();
-            app.UseHttpLogging();
+            app.UseMiddleware<CustomHttpLogingMiddleware>();
         }
 
         private static void ConfigureSwagger(IApplicationBuilder app)

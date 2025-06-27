@@ -14,6 +14,7 @@ using FluentValidation;
 using AdvertisingPlatforms.Web.Validators;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
 using FluentValidation.AspNetCore;
+using AdvertisingPlatforms.Web.Logging;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -21,14 +22,14 @@ namespace AdvertisingPlatforms.Web.Configurations
     {
         public static void ConfigureApplicationServices(this IServiceCollection services, IConfiguration config)
         {
-            AddInfrastructure(services);
+            AddInfrastructure(services, config);
             AddApplicationComponents(services, config);
             AddFluentValidation(services);
         }
 
-        private static void AddInfrastructure(IServiceCollection services)
+        private static void AddInfrastructure(IServiceCollection services, IConfiguration config)
         {
-            AddLogging(services);
+            AddLogging(services, config);
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
@@ -57,7 +58,7 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddScoped<IValidator<UpdateAdvertisementRequest>, UpdateAdvertisementRequestValidator>();
         }
 
-        private static void AddLogging(IServiceCollection services)
+        private static void AddLogging(IServiceCollection services, IConfiguration config)
         {
             services.AddLogging(logging =>
             {
@@ -65,13 +66,7 @@ namespace AdvertisingPlatforms.Web.Configurations
                 logging.AddDebug();
             });
 
-            services.AddHttpLogging
-                (logging => { 
-                    logging.LoggingFields = HttpLoggingFields.All;
-                    logging.RequestBodyLogLimit = 4096;
-                    logging.ResponseBodyLogLimit = 4096;
-                    logging.CombineLogs = true;
-                });
+            services.Configure<LoggingSettings>(config.GetSection("LogOptions"));
         }
 
         private static void AddDomainServices(IServiceCollection services)
