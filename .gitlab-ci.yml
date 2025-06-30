@@ -19,6 +19,7 @@
 stages:          # List of stages for jobs, and their order of execution
   - build
   - test
+  - sast
   - security_scan
   - publish
   - deploy
@@ -70,6 +71,28 @@ unit-test-job:   # This job runs in the test stage.
   script:
      - dotnet test
   when: manual
+
+sonarqube-check-job:
+  stage: sast
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" 
+    GIT_DEPTH: "0"  
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  before_script:
+    - apt-get update -y && apt-get install -y openjdk-17-jdk
+    - dotnet tool install --global dotnet-sonarscanner
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+  script: 
+      - dotnet sonarscanner begin /k:"squ_539e994534987929c49c69d11d11815204b0003b" /d:sonar.login=$SONAR_TOKEN /d:sonar.host.url=$SONAR_HOST_URL
+      - dotnet build --configuration Release
+      - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
+  allow_failure: true
+  only:
+    - modul_3
 
 trivy-scan-job:
   stage: security_scan
