@@ -22,7 +22,7 @@ stages:          # List of stages for jobs, and their order of execution
   - deploy
 
 variables:
-  DOTNET_VERSION: "9.0"
+  DOTNET_VERSION: "8.0.411"
   SOLUTION_FILE: "AdvertisingPlatforms.sln"
   PROJECT_PATH: "AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj"
   BUILD_CONFIGURATION: "Release"
