@@ -19,6 +19,7 @@
 stages:          # List of stages for jobs, and their order of execution
   - build
   - test
+  - security_scan
   - deploy
 
 variables:
@@ -67,12 +68,21 @@ unit-test-job:   # This job runs in the test stage.
      - dotnet test
   when: manual
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: test    # It can run at the same time as unit-test-job (in parallel).
+trivy-scan-job:
+  stage: security_scan
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  dependencies:
+    - build-job
   script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
+    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format json -o trivy-report.json ./publish/
+    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format table ./publish/
+  artifacts:
+    paths:
+      - trivy-report.json
+    expire_in: 1 week
+  allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
