@@ -104,3 +104,27 @@ deploy-job:      # This job runs in the deploy stage.
   script:
     - echo "Deploying application..."
     - echo "Application successfully deployed."
+
+zap-scan-job:
+  stage: dast
+  allow_failure: true
+  image:
+    name: zaproxy/zap-stable
+  before_script:
+    - mkdir -p /zap/wrk
+    - whoami
+  script:
+    - zap-full-scan.py -t http://88.218.62.221:$USER_PORT/ -J report-$CI_COMMIT_SHORT_SHA.json -r report-$CI_COMMIT_SHORT_SHA.html
+  after_script:
+    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.json .
+    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.html .
+    - rm -rf /zap/wrk/* 
+    - pkill -f zap.sh || true
+    - exit 0
+  artifacts:
+    when: always
+    paths:
+      - report-$CI_COMMIT_SHORT_SHA.html
+      - report-$CI_COMMIT_SHORT_SHA.json
+    reports:
+      dast: report-$CI_COMMIT_SHORT_SHA.json
