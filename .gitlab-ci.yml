@@ -20,7 +20,9 @@ stages:          # List of stages for jobs, and their order of execution
   - build
   - test
   - security_scan
+  - publish
   - deploy
+ 
 
 variables:
   DOTNET_VERSION: "9.0"
@@ -83,6 +85,18 @@ trivy-scan-job:
       - trivy-report.json
     expire_in: 1 week
   allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
+
+publish-job:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - dotnet publish --configuration Release --output ./publish
+  artifacts:
+    paths:
+      - ./publish/
+    expire_in: 1 week
+  only:
+    - modul_3
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
