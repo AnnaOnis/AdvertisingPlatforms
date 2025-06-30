@@ -22,7 +22,7 @@ stages:          # List of stages for jobs, and their order of execution
   - deploy
 
 variables:
-  DOTNET_VERSION: "8.0.411"
+  DOTNET_VERSION: "9.0"
   SOLUTION_FILE: "AdvertisingPlatforms.sln"
   PROJECT_PATH: "AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj"
   BUILD_CONFIGURATION: "Release"
@@ -48,7 +48,7 @@ cache:
 
 build-job:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:8.0
+  image: mcr.microsoft.com/dotnet/sdk:9.0
   script:
     - dotnet restore
     - dotnet build --configuration Release --no-restore --output ./publish/
