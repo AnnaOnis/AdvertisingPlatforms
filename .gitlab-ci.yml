@@ -26,7 +26,6 @@ stages:          # List of stages for jobs, and their order of execution
   - dast
  
 
-
 variables:
   DOTNET_VERSION: "9.0"
   SOLUTION_FILE: "AdvertisingPlatforms.sln"
