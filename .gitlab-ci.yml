@@ -128,8 +128,8 @@ docker-publish-job:
   stage: docker-publish
   script:
     - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
-    - docker build -t $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna/advertisingplatforms:$DOCKER_TAG .
-    - docker push $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna/advertisingplatforms:$DOCKER_TAG
+    - docker build -t $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
+    - docker push $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
   only:
     - modul_3
 
@@ -188,3 +188,4 @@ zap-scan-job:
       - report-$CI_COMMIT_SHORT_SHA.json
     reports:
       dast: report-$CI_COMMIT_SHORT_SHA.json
+      
