@@ -7,6 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvertisingPlatforms", "Adv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvPlatformsTests", "AdvPlatformsTests\AdvPlatformsTests.csproj", "{F2F4893C-0774-4AA8-9C07-A78092E7F090}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{9601D483-5732-4657-8025-0CCAD13B216A}"
+	ProjectSection(SolutionItems) = preProject
+		TestFile.txt = TestFile.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
