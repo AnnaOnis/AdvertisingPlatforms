@@ -22,6 +22,8 @@ stages:          # List of stages for jobs, and their order of execution
   - sast
   - security_scan
   - publish
+  - docker-publish
+  - migrate
   - deploy
   - dast
  
@@ -122,12 +124,46 @@ publish-job:
   only:
     - modul_3
 
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  environment: production
+docker-publish-job:
+  stage: docker-publish
   script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
+    - docker build -t $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
+    - docker push $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
+  only:
+    - modul_3
+
+migrate-database-job:
+  stage: migrate
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - dotnet tool install --global dotnet-ef || true
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
+  when: manual
+  only:
+    - modul_3
+  allow_failure: true
+
+deploy-job:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache sshpass
+    - apk add --no-cache openssh-client
+    - apk add --no-cache openssh-askpass
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-keygen -p -P "password" -N "" -f /root/.ssh/id_rsa
+    - ssh-add /root/.ssh/id_rsa
+  script:
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
 
 zap-scan-job:
   stage: dast
