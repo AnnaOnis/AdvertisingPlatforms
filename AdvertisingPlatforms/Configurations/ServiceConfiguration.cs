@@ -22,6 +22,11 @@ namespace AdvertisingPlatforms.Web.Configurations
     {
         public static void ConfigureApplicationServices(this IServiceCollection services, IConfiguration config)
         {
+            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                config["ConnectionStrings:DefaultConnection"] = connectionString;
+            }
             AddInfrastructure(services, config);
             AddApplicationComponents(services, config);
             AddFluentValidation(services);
