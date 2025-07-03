@@ -35,7 +35,7 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// </summary>
         /// <param name="advertisement">The advertisement to be updated.</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        Task UpdateAdvertisement(Guid advertisemntId, string newAdvertisementName, CancellationToken cancellationToken);
+        Task UpdateAdvertisement(Guid advertisementId, string newAdvertisementName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Deletes an advertisement

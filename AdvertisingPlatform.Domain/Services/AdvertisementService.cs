@@ -11,15 +11,13 @@ namespace AdvertisingPlatforms.Domain.Services
 {
     public class AdvertisementService : IAdvertisementService
     {
-        private readonly ILogger<AdvertisementService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDomainModelFactory<AdvertisementDb, Advertisement> _factory;
 
-        public AdvertisementService(ILogger<AdvertisementService> logger, 
+        public AdvertisementService(
             IUnitOfWork unitOfWork,
             IDomainModelFactory<AdvertisementDb, Advertisement> factory)
         {
-            _logger = logger;
             _unitOfWork = unitOfWork;
             _factory = factory;
         }

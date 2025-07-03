@@ -12,15 +12,13 @@ namespace AdvertisingPlatforms.Domain.Services
 {
     public class AdvertisingPlatformService : IAdvertisingPlatformService
     {
-        private readonly ILogger<AdvertisingPlatformService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IDomainModelFactory<AdvertisingPlatformDb, AdvertisingPlatform> _factory;
 
-        public AdvertisingPlatformService(ILogger<AdvertisingPlatformService> logger, 
+        public AdvertisingPlatformService(
             IUnitOfWork unitOfWork,
             IDomainModelFactory<AdvertisingPlatformDb, AdvertisingPlatform> factory)
         {
-            _logger = logger;
             _unitOfWork = unitOfWork;
             _factory = factory;
         }
@@ -90,8 +88,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<IReadOnlyCollection<AdvertisingPlatform>> FindByLocation(string locationPath, 
             CancellationToken cancellationToken, 
-            string? sortBy, 
-            bool isAsc)
+            string? sortBy = null, 
+            bool isAsc = true)
         {
             var locationDb = await _unitOfWork.LocationRepository.FindByPathAsync(locationPath, cancellationToken);
             if (locationDb != null)

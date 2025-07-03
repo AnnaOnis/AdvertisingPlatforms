@@ -11,15 +11,12 @@ namespace AdvertisingPlatforms.Web.Controllers
     public class UploadDataController : Controller
     {
         private readonly IUploadDataService _uploadDataService;
-        private readonly ILogger<AdvertisingPlatformsController> _logger;
 
         public UploadDataController(
             IUploadDataService uploadDataService, 
-            ILogger<AdvertisingPlatformsController> logger,
             IValidator<UploadFileRequest> validator)
         {
             _uploadDataService = uploadDataService;
-            _logger = logger;
         }
 
         /// <summary>
@@ -40,10 +37,7 @@ namespace AdvertisingPlatforms.Web.Controllers
 
             await _uploadDataService.UploadDataFromFile(fileData, cancellationToken);
 
-            return Ok(new
-            {
-                Message = LogMessages.DATA_UPLOADED_SUCCESSFULLY,
-            });
+            return Ok();
         }
     }
 }
