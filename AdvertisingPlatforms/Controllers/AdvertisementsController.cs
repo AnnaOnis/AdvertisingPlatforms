@@ -5,6 +5,7 @@ using AdvertisingPlatforms.Web.HttpModels.Requests;
 using AutoMapper;
 using AdvertisingPlatforms.Web.HttpModels.Responses;
 using AdvertisingPlatforms.DAL.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -62,7 +63,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         [HttpGet("[action]")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<Advertisement>> FindAdvertisementByName([FromQuery] string name, CancellationToken cancellationToken)
+        public async Task<ActionResult<Advertisement>> FindAdvertisementByName([FromQuery][Required] string name, CancellationToken cancellationToken)
         {
             var advertisement = await _advertisementService.FindByName(name, cancellationToken);
             if (advertisement == null)

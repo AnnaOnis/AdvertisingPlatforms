@@ -5,6 +5,7 @@ using AdvertisingPlatforms.Web.HttpModels.Requests;
 using AdvertisingPlatforms.Base.Extensions;
 using AutoMapper;
 using AdvertisingPlatforms.DAL.Entities;
+using System.ComponentModel.DataAnnotations;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -63,7 +64,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         [HttpGet("[action]")]
         [ProducesResponseType(200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<Location>> FindLocationByPath([FromQuery] string path, CancellationToken cancellationToken)
+        public async Task<ActionResult<Location>> FindLocationByPath([FromQuery][Required] string path, CancellationToken cancellationToken)
         {
             var normalizePath = path.NormalizeLocationPath();
             var location = await _locationService.FindByPath(normalizePath, cancellationToken);

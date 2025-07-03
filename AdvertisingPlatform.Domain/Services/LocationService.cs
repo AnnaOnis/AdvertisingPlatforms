@@ -5,6 +5,7 @@ using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Constants;
+using System.IO;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -40,6 +41,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Location> CreateLocation(string locationPath, Guid? parentId, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(locationPath)) throw new ArgumentNullException(nameof(locationPath));
+
             if (await _unitOfWork.LocationRepository.ExistsByPathAsync(locationPath, cancellationToken))
             {
                 throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + locationPath);
@@ -57,7 +60,9 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateLocation(Guid locationId, string newLocationPath, Guid? newparentId, CancellationToken cancellationToken)
         {
-            if(!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            if (string.IsNullOrEmpty(newLocationPath)) throw new ArgumentNullException(nameof(newLocationPath));
+
+            if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
             {
                 throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
@@ -88,6 +93,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Location?> FindByPath(string path, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+
             var locationDb = await _unitOfWork.LocationRepository.FindByPathAsync(path, cancellationToken);
             if (locationDb == null) return null;
             

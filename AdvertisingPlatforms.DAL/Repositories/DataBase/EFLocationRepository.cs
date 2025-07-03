@@ -14,15 +14,11 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 
         public Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-
             return Entities.FirstOrDefaultAsync(location => location.Path == path, cancellationToken);
         }
 
         public async Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
-
             return await Entities.AnyAsync(location => location.Path == path, cancellationToken);
         }
     }

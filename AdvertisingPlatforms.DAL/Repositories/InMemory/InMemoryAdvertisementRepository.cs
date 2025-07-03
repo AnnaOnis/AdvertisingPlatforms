@@ -11,13 +11,13 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryAdvertisementRepository() { }
 
-        public Task<AdvertisementDb?> FindByNameAsync(string name, CancellationToken cancellationToken)
+        public Task<AdvertisementDb> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
             if(string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             var item = _entityById.FirstOrDefault(item => item.Value.Name == name);
 
-            return Task.FromResult(item.Value ?? null);
+            return Task.FromResult(item.Value);
         }
 
         public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)

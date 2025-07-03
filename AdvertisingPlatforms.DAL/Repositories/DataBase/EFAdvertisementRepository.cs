@@ -14,8 +14,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 
         public async Task<AdvertisementDb?> FindByNameAsync(string name, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
             var advertisement = await Entities.FirstOrDefaultAsync(a => a.Name == name, cancellationToken);
 
             return advertisement;
@@ -23,8 +21,6 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 
         public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
             return await Entities.AnyAsync(a => a.Name == name, cancellationToken);
         }
     }

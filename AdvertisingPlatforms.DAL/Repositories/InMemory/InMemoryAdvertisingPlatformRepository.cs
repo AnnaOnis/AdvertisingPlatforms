@@ -65,14 +65,9 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             CancellationToken cancellationToken, 
             AdvertisingPlatformsSortDelegate? sortDelegate = null)
         {
-            if (location == null)
-            {
-                throw new ArgumentNullException(nameof(location));
-            }
-
             if (!_platformsByLocationPrefix.TryGetValue(location.Path, out var platforms))
             {
-                return Array.Empty<AdvertisingPlatformDb>();
+                return await Task.FromResult(Array.Empty<AdvertisingPlatformDb>());
             }
             var query = platforms.AsQueryable();
 
