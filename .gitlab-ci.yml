@@ -35,7 +35,7 @@ variables:
   BUILD_CONFIGURATION: "Release"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
-  ConnectionStrings__DefaultConnection: "Server=88.218.62.221;Database=delivery4;User Id=user4;Password=P@ssw0rd_4;"
+  CONNECTION_STRING: "Server=88.218.62.221;Database=delivery4;User Id=user4;Password=P@ssw0rd_4;"
   DOCKER_REGISTRY: "em-gitlab.ru:5050"
   DOCKER_REGISTRY_PASSWORD: "GvnlTfqaYe/zhdu83fLVHXveP2k0jCrIJBCZXK2bm8w="
   DOCKER_IMAGE: "em-gitlab.ru/em_dotnet_e5/advertisingplatformsanna"
