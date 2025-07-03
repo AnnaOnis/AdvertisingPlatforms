@@ -100,8 +100,6 @@ namespace AdvertisingPlatforms.Domain.Services
             string? sortBy = null, 
             bool isAsc = true)
         {
-            if (string.IsNullOrEmpty(locationPath)) throw new ArgumentNullException(nameof(locationPath));
-
             var locationDb = await _unitOfWork.LocationRepository.FindByPathAsync(locationPath, cancellationToken);
             if (locationDb != null)
             {

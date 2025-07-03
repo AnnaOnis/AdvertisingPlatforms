@@ -42,8 +42,6 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement> CreateAdvertisement(string advertisementName, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(advertisementName)) throw new ArgumentNullException(nameof(advertisementName));
-
             if (await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(advertisementName, cancellationToken))
             {
                 throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + advertisementName);
@@ -57,8 +55,6 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateAdvertisement(Guid advertisementId, string newAdvertisementName, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(newAdvertisementName)) throw new ArgumentNullException(nameof(newAdvertisementName));
-
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
                 throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
@@ -85,8 +81,6 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement?> FindByName(string name, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
-
             var advertisementDb = await _unitOfWork.AdvertisementRepository.FindByNameAsync(name, cancellationToken);
             if (advertisementDb == null) return null;
             

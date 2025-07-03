@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Xml.Linq;
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.DAL.Abstractions;
@@ -11,11 +12,9 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryLocationRepository() { }
 
-        public Task<LocationDb> FindByPathAsync(string path, CancellationToken cancellationToken)
+        public Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken)
         {
-            var item = _entityById.FirstOrDefault(item => item.Value.Path == path);
-
-            return Task.FromResult(item.Value);
+            return Task.FromResult(_entityById.Values.FirstOrDefault(item => item.Path == path));
         }
 
         public Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken)
