@@ -6,7 +6,7 @@ namespace AdvertisingPlatforms.DAL.Entities
     /// <summary>
     /// Represents a location for an advertising platform
     /// </summary>
-    public class LocationDb : IEntityDb
+    public class LocationDb : IEntity
     {
         public Guid Id { get; init; }
         public string Path { get; set; }

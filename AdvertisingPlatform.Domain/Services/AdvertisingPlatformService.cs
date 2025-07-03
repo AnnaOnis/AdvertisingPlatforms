@@ -27,7 +27,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + platformId);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
             }
             var platformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
             var platform = _factory.Create(platformDb);
@@ -43,10 +43,13 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<AdvertisingPlatform> CreatePlatform(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken) ||
-                !await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
+            }
+            if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
             if (await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocationAsync(advertisementId, 
                 locationId, 
@@ -63,11 +66,17 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdatePlatform(Guid platformId, Guid newAdvertisementId, Guid newLocationId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken) ||
-                !await _unitOfWork.AdvertisementRepository.ExistsAsync(newAdvertisementId, cancellationToken) ||
-                !await _unitOfWork.LocationRepository.ExistsAsync(newLocationId, cancellationToken))
+            if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
+            }
+            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(newAdvertisementId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, newAdvertisementId);
+            }
+            if (!await _unitOfWork.LocationRepository.ExistsAsync(newLocationId, cancellationToken))
+            {
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, newLocationId);
             }
             var updatingPlatformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
             updatingPlatformDb.AdvertisementId = newAdvertisementId;
@@ -80,7 +89,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + platformId);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
             }
             await _unitOfWork.AdvertisingPlatformRepository.DeleteAsync(platformId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();

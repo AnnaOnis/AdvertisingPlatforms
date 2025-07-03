@@ -26,7 +26,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
             var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisementId, cancellationToken);
             var advertisement = _factory.Create(advertisementDb);
@@ -57,7 +57,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
             if(await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(newAdvertisementName, cancellationToken))
             {
@@ -73,7 +73,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + advertisementId);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
             await _unitOfWork.AdvertisementRepository.DeleteAsync(advertisementId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();

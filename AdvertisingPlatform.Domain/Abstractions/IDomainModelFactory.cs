@@ -4,7 +4,7 @@ using AdvertisingPlatforms.Domain.Models;
 
 namespace AdvertisingPlatforms.Domain.Abstractions
 {
-    public interface IDomainModelFactory<TEntityDb, TDomainModel> where TEntityDb : class, IEntityDb where TDomainModel : class, IDomainModel
+    public interface IDomainModelFactory<TEntityDb, TDomainModel> where TEntityDb : class, IEntity where TDomainModel : class, IDomainModel
     {
         TDomainModel Create(TEntityDb entityDb);
         IReadOnlyCollection<TDomainModel> CreateMany(IReadOnlyCollection<TEntityDb> entityDbs);

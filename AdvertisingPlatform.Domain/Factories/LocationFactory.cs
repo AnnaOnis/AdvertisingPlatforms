@@ -15,7 +15,7 @@ namespace AdvertisingPlatforms.Domain.Fabrics
 
         public IReadOnlyCollection<Location> CreateMany(IReadOnlyCollection<LocationDb> entityDbs)
         {
-            if (entityDbs.Count == 0) return [];
+            if (!entityDbs.Any()) return [];
             return entityDbs.Select(Create).ToList();
         }
     }

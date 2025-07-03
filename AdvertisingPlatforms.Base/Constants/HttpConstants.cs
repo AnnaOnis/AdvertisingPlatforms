@@ -1,7 +1,7 @@
 ﻿
 namespace AdvertisingPlatforms.Base.Constants
 {
-    public class HttpConstants
+    public static class HttpConstants
     {
         public static readonly string[] RequestHeadersToRemove =
             [

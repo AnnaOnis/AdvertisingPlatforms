@@ -61,7 +61,7 @@ namespace AdvertisingPlatforms.Domain.Parser
                     return locationPath;
                 });
 
-            if (locationPaths.Count() == 0)
+            if (locationPaths.Any())
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
 
             return new ParseDataDTO(name, locationPaths);

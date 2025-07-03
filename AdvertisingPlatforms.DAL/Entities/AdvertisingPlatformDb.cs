@@ -5,7 +5,7 @@ namespace AdvertisingPlatforms.DAL.Entities
     /// <summary>
     /// Represents an advertising platform with a set of locations
     /// </summary>
-    public class AdvertisingPlatformDb : IEntityDb
+    public class AdvertisingPlatformDb : IEntity
     {
         public Guid Id { get; init; }
         public Guid AdvertisementId { get; set; }

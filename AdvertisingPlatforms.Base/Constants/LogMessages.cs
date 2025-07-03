@@ -1,6 +1,6 @@
 ﻿namespace AdvertisingPlatforms.Base.Constants
 {
-    public class LogMessages
+    public static class LogMessages
     {
         public const string STARTING_FILE_UPLOAD = "Starting file upload: {FileName}";
         public const string PARSING_FILE_CONTENT = "Parsing file content";

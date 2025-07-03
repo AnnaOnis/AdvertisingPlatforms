@@ -1,7 +1,7 @@
 ﻿
 namespace AdvertisingPlatforms.Base.Constants
 {
-    public class ErrorMessages
+    public static class ErrorMessages
     {
         public const string FILE_IS_REQUIRED = "File validation failed: File is required.";
         public const string ALLOWED_FILE_EXTENSION = "File validation failed: Only .txt files are allowed.";

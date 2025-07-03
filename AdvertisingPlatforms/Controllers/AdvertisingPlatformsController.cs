@@ -134,7 +134,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult> DeletePlatform(Guid id, CancellationToken cancellationToken)
         {
             await _advertisingPlatformService.DeletePlatform(id, cancellationToken);
-            return NoContent();
+            return Ok();
         }
     }
 }

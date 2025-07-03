@@ -125,7 +125,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult> DeleteAdvertisement(Guid id, CancellationToken cancellationToken)
         {
             await _advertisementService.DeleteAdvertisement(id, cancellationToken);
-            return NoContent();
+            return Ok();
         }
     }
 } 

@@ -5,7 +5,7 @@ using AdvertisingPlatforms.DAL.Abstractions;
 
 namespace AdvertisingPlatforms.DAL.Repositories.InMemory
 {
-    public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntityDb
+    public class InMemoryRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
     {
         protected readonly ConcurrentDictionary<Guid, TEntity> _entityById = new();
         public InMemoryRepository() { }
@@ -32,7 +32,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if(!_entityById.TryRemove(id, out var entity))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + id);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, id);
             }
             return Task.CompletedTask;
         }
@@ -46,7 +46,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if (!_entityById.TryGetValue(id, out var entity))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND + id);
+                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, id);
             }
 
             return Task.FromResult(entity);

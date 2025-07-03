@@ -2,7 +2,6 @@
 using AdvertisingPlatforms.Base.Exceptions;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Extensions;
-using FluentValidation;
 using AdvertisingPlatforms.Web.HttpModels.Responses;
 
 namespace AdvertisingPlatforms.Web.Middlewares

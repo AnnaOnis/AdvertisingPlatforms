@@ -112,7 +112,7 @@ namespace AdvertisingPlatforms.Web.Controllers
             CancellationToken cancellationToken)
         {
             await _locationService.UpdateLocation(request.Id, request.Path, request.ParentId, cancellationToken);
-            return NoContent();
+            return Ok();
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace AdvertisingPlatforms.Web.Controllers
         public async Task<ActionResult> DeleteLocation(Guid id, CancellationToken cancellationToken)
         {
             await _locationService.DeleteLocation(id, cancellationToken);
-            return NoContent();
+            return Ok();
         }
     }
 } 

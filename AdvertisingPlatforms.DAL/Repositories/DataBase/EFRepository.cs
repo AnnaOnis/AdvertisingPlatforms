@@ -5,7 +5,7 @@ using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 {
-    public class EFRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntityDb
+    public class EFRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity
     {
         private readonly AdvertisingPlatformsDbContext _dbContext;
         protected DbSet<TEntity> Entities;

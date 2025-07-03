@@ -15,7 +15,7 @@ namespace AdvertisingPlatforms.Domain.Fabrics
 
         public IReadOnlyCollection<Advertisement> CreateMany(IReadOnlyCollection<AdvertisementDb> entityDbs)
         {
-            if (entityDbs.Count == 0) return [];
+            if (!entityDbs.Any()) return [];
             return entityDbs.Select(Create).ToList();
         }
     }
