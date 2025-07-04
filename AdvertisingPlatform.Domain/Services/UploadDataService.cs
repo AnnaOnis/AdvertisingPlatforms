@@ -53,7 +53,7 @@ namespace AdvertisingPlatforms.Domain.Services
                                .Distinct()
                                .ToList();
 
-            var sortedPaths = allPaths.OrderBy(p => p.Split('/').Length).ToList();
+            var sortedPaths = allPaths.OrderBy(p => p.Split(TextSeparators.SLASH).Length).ToList();
 
             foreach (var path in sortedPaths)
             {
@@ -92,10 +92,10 @@ namespace AdvertisingPlatforms.Domain.Services
 
         private async Task<LocationDb> FindParentLocation(string path, Dictionary<string, LocationDb> locations, CancellationToken cancellationToken)
         {
-            var segments = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            var segments = path.Split(TextSeparators.SLASH, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length <= 1) return null;
 
-            var parentPath = string.Join('/', segments.Take(segments.Length - 1));
+            var parentPath = string.Join(TextSeparators.SLASH, segments.Take(segments.Length - 1));
             parentPath = parentPath.NormalizeLocationPath();
 
             if (locations.TryGetValue(parentPath, out var parent))

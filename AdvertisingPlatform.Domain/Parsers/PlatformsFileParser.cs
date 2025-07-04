@@ -40,6 +40,7 @@ namespace AdvertisingPlatforms.Domain.Parser
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, ErrorMessages.ERROR_PARSING_LINE, i + 1, line);
+                    throw;
                 }
             }
             return result;
@@ -61,7 +62,7 @@ namespace AdvertisingPlatforms.Domain.Parser
                     return locationPath;
                 });
 
-            if (locationPaths.Any())
+            if (!locationPaths.Any())
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
 
             return new ParseDataDto(name, locationPaths);
