@@ -1,5 +1,6 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Base.Extensions;
+using System.ComponentModel.DataAnnotations;
 
 namespace AdvertisingPlatforms.DAL.Entities
 {
@@ -9,6 +10,8 @@ namespace AdvertisingPlatforms.DAL.Entities
     public class LocationDb : IEntity
     {
         public Guid Id { get; init; }
+
+        [Required]
         public string Path { get; set; }
         public Guid? ParentId { get; set; }
 

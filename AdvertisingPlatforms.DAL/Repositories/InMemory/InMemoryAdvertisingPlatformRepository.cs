@@ -123,9 +123,9 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             return Task.CompletedTask;
         }
 
-        public async Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
+        public Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
-            return _entityById.Values.Any(p => p.AdvertisementId == advertisementId && p.LocationId == locationId);
+            return Task.FromResult(_entityById.Values.Any(p => p.AdvertisementId == advertisementId && p.LocationId == locationId));
         }
     }
 }
