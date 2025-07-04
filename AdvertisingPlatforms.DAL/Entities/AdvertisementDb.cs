@@ -8,8 +8,7 @@ namespace AdvertisingPlatforms.DAL.Entities
     {
         public Guid Id { get; init; }
 
-        [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         public ICollection<AdvertisingPlatformDb> AdvertisingPlatforms { get; set; } = new HashSet<AdvertisingPlatformDb>();
 

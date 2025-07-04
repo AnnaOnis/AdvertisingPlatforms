@@ -10,9 +10,7 @@ namespace AdvertisingPlatforms.DAL.Entities
     public class LocationDb : IEntity
     {
         public Guid Id { get; init; }
-
-        [Required]
-        public string Path { get; set; }
+        public string Path { get; set; } = null!;
         public Guid? ParentId { get; set; }
 
         public LocationDb? Parent { get; set; }

@@ -90,7 +90,7 @@ namespace AdvertisingPlatforms.Domain.Services
             return locationDictionary;
         }
 
-        private async Task<LocationDb> FindParentLocation(string path, Dictionary<string, LocationDb> locations, CancellationToken cancellationToken)
+        private async Task<LocationDb?> FindParentLocation(string path, Dictionary<string, LocationDb> locations, CancellationToken cancellationToken)
         {
             var segments = path.Split(TextSeparators.SLASH, StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length <= 1) return null;
