@@ -46,7 +46,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             return result;
         }
 
-        private ParseDataDto ParseLine(string line)
+        private static ParseDataDto ParseLine(string line)
         {
             line.ValidateContentLine();
 

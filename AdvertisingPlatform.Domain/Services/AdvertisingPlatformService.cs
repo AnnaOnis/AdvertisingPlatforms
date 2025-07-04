@@ -110,7 +110,7 @@ namespace AdvertisingPlatforms.Domain.Services
             return Array.Empty<AdvertisingPlatform>();
         }
 
-        private AdvertisingPlatformsSortDelegate? GetSorter(string? sortBy, bool isAsc)
+        private static AdvertisingPlatformsSortDelegate? GetSorter(string? sortBy, bool isAsc)
         {
             AdvertisingPlatformsSortDelegate? sorter = sortBy?.ToLower() switch
             {

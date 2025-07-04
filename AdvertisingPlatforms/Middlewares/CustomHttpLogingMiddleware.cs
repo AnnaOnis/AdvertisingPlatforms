@@ -115,7 +115,7 @@ namespace AdvertisingPlatforms.Web.Middlewares
             );
         }
 
-        private async Task<string?> ReadAndProcessBodyAsync(
+        private static async Task<string?> ReadAndProcessBodyAsync(
             Stream stream,
             string? contentType,
             int maxSize)

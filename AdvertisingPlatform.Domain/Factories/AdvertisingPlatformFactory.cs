@@ -17,7 +17,7 @@ namespace AdvertisingPlatforms.Domain.Fabrics
 
         public IReadOnlyCollection<AdvertisingPlatform> CreateMany(IReadOnlyCollection<AdvertisingPlatformDb> advertisingPlatformDbs)
         {
-            if (!advertisingPlatformDbs.Any()) return [];
+            if (advertisingPlatformDbs.Count == 0) return [];
             return advertisingPlatformDbs.Select(Create).ToList();
         }
     }
