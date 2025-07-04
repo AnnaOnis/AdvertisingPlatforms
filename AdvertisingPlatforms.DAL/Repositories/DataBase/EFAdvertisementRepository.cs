@@ -12,14 +12,14 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         {
         }
 
-        public async Task<AdvertisementDb?> FindByNameAsync(string name, CancellationToken cancellationToken)
+        public async Task<AdvertisementDb?> FindByName(string name, CancellationToken cancellationToken)
         {
             var advertisement = await Entities.FirstOrDefaultAsync(a => a.Name == name, cancellationToken);
 
             return advertisement;
         }
 
-        public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+        public async Task<bool> ExistsByName(string name, CancellationToken cancellationToken)
         {
             return await Entities.AnyAsync(a => a.Name == name, cancellationToken);
         }

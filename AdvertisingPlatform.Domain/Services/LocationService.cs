@@ -23,34 +23,34 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Location> GetById(Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            if (!await _unitOfWork.LocationRepository.Exists(locationId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
-            var locationDb = await _unitOfWork.LocationRepository.GetByIdAsync(locationId, cancellationToken);
+            var locationDb = await _unitOfWork.LocationRepository.GetById(locationId, cancellationToken);
             var location = _factory.Create(locationDb);
             return location;
         }
 
         public async Task<IReadOnlyCollection<Location>> GetAllLocations(CancellationToken cancellationToken)
         {
-            var locationsDb = await _unitOfWork.LocationRepository.GetAllAsync(cancellationToken);
+            var locationsDb = await _unitOfWork.LocationRepository.GetAll(cancellationToken);
             var locations = _factory.CreateMany(locationsDb);
             return locations;
         }
 
         public async Task<Location> CreateLocation(string locationPath, Guid? parentId, CancellationToken cancellationToken)
         {
-            if (await _unitOfWork.LocationRepository.ExistsByPathAsync(locationPath, cancellationToken))
+            if (await _unitOfWork.LocationRepository.ExistsByPath(locationPath, cancellationToken))
             {
                 throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + locationPath);
             }
-            if(parentId != null && !await _unitOfWork.LocationRepository.ExistsAsync(parentId.Value, cancellationToken))
+            if(parentId != null && !await _unitOfWork.LocationRepository.Exists(parentId.Value, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, parentId);
             }
             var locationDb = new LocationDb(locationPath, parentId);
-            await _unitOfWork.LocationRepository.AddAsync(locationDb, cancellationToken);
+            await _unitOfWork.LocationRepository.Add(locationDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
             
             return _factory.Create(locationDb);
@@ -58,38 +58,38 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateLocation(Guid locationId, string newLocationPath, Guid? newparentId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            if (!await _unitOfWork.LocationRepository.Exists(locationId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
-            if (newparentId != null && !await _unitOfWork.LocationRepository.ExistsAsync(newparentId.Value, cancellationToken))
+            if (newparentId != null && !await _unitOfWork.LocationRepository.Exists(newparentId.Value, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, newparentId);
             }
-            if (await _unitOfWork.LocationRepository.ExistsByPathAsync(newLocationPath, cancellationToken))
+            if (await _unitOfWork.LocationRepository.ExistsByPath(newLocationPath, cancellationToken))
             {
                 throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + newLocationPath);
             }
-            var locationDb = await _unitOfWork.LocationRepository.GetByIdAsync(locationId, cancellationToken);
+            var locationDb = await _unitOfWork.LocationRepository.GetById(locationId, cancellationToken);
             locationDb.Path = newLocationPath;
             locationDb.ParentId = newparentId;
-            await _unitOfWork.LocationRepository.UpdateAsync(locationDb, cancellationToken);
+            await _unitOfWork.LocationRepository.Update(locationDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteLocation(Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
+            if (!await _unitOfWork.LocationRepository.Exists(locationId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
-            await _unitOfWork.LocationRepository.DeleteAsync(locationId, cancellationToken);
+            await _unitOfWork.LocationRepository.Delete(locationId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<Location?> FindByPath(string path, CancellationToken cancellationToken)
         {
-            var locationDb = await _unitOfWork.LocationRepository.FindByPathAsync(path, cancellationToken);
+            var locationDb = await _unitOfWork.LocationRepository.FindByPath(path, cancellationToken);
             if (locationDb == null) return null;
             
             var location = _factory.Create(locationDb);

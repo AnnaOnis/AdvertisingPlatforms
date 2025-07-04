@@ -10,12 +10,12 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         {
         }
 
-        public Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken)
+        public Task<LocationDb?> FindByPath(string path, CancellationToken cancellationToken)
         {
             return Entities.FirstOrDefaultAsync(location => location.Path == path, cancellationToken);
         }
 
-        public async Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken)
+        public async Task<bool> ExistsByPath(string path, CancellationToken cancellationToken)
         {
             return await Entities.AnyAsync(location => location.Path == path, cancellationToken);
         }

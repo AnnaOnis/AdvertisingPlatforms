@@ -24,30 +24,30 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement> GetById(Guid advertisementId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            if (!await _unitOfWork.AdvertisementRepository.Exists(advertisementId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
-            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisementId, cancellationToken);
+            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetById(advertisementId, cancellationToken);
             var advertisement = _factory.Create(advertisementDb);
             return advertisement;
         }
 
         public async Task<IReadOnlyCollection<Advertisement>> GetAllAdvertisements(CancellationToken cancellationToken)
         {
-            var advertisementsDb = await _unitOfWork.AdvertisementRepository.GetAllAsync(cancellationToken);
+            var advertisementsDb = await _unitOfWork.AdvertisementRepository.GetAll(cancellationToken);
             var advertisements = _factory.CreateMany(advertisementsDb);
             return advertisements;
         }
 
         public async Task<Advertisement> CreateAdvertisement(string advertisementName, CancellationToken cancellationToken)
         {
-            if (await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(advertisementName, cancellationToken))
+            if (await _unitOfWork.AdvertisementRepository.ExistsByName(advertisementName, cancellationToken))
             {
                 throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + advertisementName);
             }
             var advertisementDb = new AdvertisementDb(advertisementName);
-            await _unitOfWork.AdvertisementRepository.AddAsync(advertisementDb, cancellationToken);
+            await _unitOfWork.AdvertisementRepository.Add(advertisementDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
             
             return _factory.Create(advertisementDb);
@@ -55,33 +55,33 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateAdvertisement(Guid advertisementId, string newAdvertisementName, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            if (!await _unitOfWork.AdvertisementRepository.Exists(advertisementId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
-            if(await _unitOfWork.AdvertisementRepository.ExistsByNameAsync(newAdvertisementName, cancellationToken))
+            if(await _unitOfWork.AdvertisementRepository.ExistsByName(newAdvertisementName, cancellationToken))
             {
                 throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + newAdvertisementName);
             }
-            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetByIdAsync(advertisementId, cancellationToken);
+            var advertisementDb = await _unitOfWork.AdvertisementRepository.GetById(advertisementId, cancellationToken);
             advertisementDb.Name = newAdvertisementName;
-            await _unitOfWork.AdvertisementRepository.UpdateAsync(advertisementDb, cancellationToken);
+            await _unitOfWork.AdvertisementRepository.Update(advertisementDb, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task DeleteAdvertisement(Guid advertisementId, CancellationToken cancellationToken)
         {
-            if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
+            if (!await _unitOfWork.AdvertisementRepository.Exists(advertisementId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
-            await _unitOfWork.AdvertisementRepository.DeleteAsync(advertisementId, cancellationToken);
+            await _unitOfWork.AdvertisementRepository.Delete(advertisementId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<Advertisement?> FindByName(string name, CancellationToken cancellationToken)
         {
-            var advertisementDb = await _unitOfWork.AdvertisementRepository.FindByNameAsync(name, cancellationToken);
+            var advertisementDb = await _unitOfWork.AdvertisementRepository.FindByName(name, cancellationToken);
             if (advertisementDb == null) return null;
             
             var advertisement = _factory.Create(advertisementDb);

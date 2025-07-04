@@ -2,12 +2,12 @@
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
-        Task<TEntity> GetByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<IReadOnlyCollection<TEntity>> GetAllAsync(CancellationToken cancellationToken);
-        Task AddAsync(TEntity entity, CancellationToken cancellationToken);
-        Task AddRangeAsync(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken);
-        Task UpdateAsync(TEntity entity, CancellationToken cancellationToken);
-        Task DeleteAsync(Guid id, CancellationToken cancellationToken);
-        Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken);
+        Task<TEntity> GetById(Guid id, CancellationToken cancellationToken);
+        Task<IReadOnlyCollection<TEntity>> GetAll(CancellationToken cancellationToken);
+        Task Add(TEntity entity, CancellationToken cancellationToken);
+        Task AddRange(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken);
+        Task Update(TEntity entity, CancellationToken cancellationToken);
+        Task Delete(Guid id, CancellationToken cancellationToken);
+        Task<bool> Exists(Guid id, CancellationToken cancellationToken);
     }
 }

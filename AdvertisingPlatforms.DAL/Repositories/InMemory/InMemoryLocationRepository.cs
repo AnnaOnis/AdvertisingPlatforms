@@ -12,12 +12,12 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryLocationRepository() { }
 
-        public Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken)
+        public Task<LocationDb?> FindByPath(string path, CancellationToken cancellationToken)
         {
             return Task.FromResult(_entityById.Values.FirstOrDefault(item => item.Path == path));
         }
 
-        public Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken)
+        public Task<bool> ExistsByPath(string path, CancellationToken cancellationToken)
         {
             return Task.FromResult(ExistsByPath(path));
         }

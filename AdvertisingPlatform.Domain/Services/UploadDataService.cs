@@ -59,7 +59,7 @@ namespace AdvertisingPlatforms.Domain.Services
             {
                 if (locationDictionary.ContainsKey(path)) continue;
 
-                var existingLocation = await _unitOfWork.LocationRepository.FindByPathAsync(path, cancellationToken);
+                var existingLocation = await _unitOfWork.LocationRepository.FindByPath(path, cancellationToken);
                 if (existingLocation != null)
                 {
                     locationDictionary.Add(path, existingLocation);
@@ -72,7 +72,7 @@ namespace AdvertisingPlatforms.Domain.Services
                 var location = new LocationDb(path, parent?.Id);
 
                 locationDictionary.Add(path, location);
-                await _unitOfWork.LocationRepository.AddAsync(location, cancellationToken);
+                await _unitOfWork.LocationRepository.Add(location, cancellationToken);
                 _logger.LogInformation(LogMessages.LOCATION_CREATED, path);
                 addedCount++;
             }
@@ -101,7 +101,7 @@ namespace AdvertisingPlatforms.Domain.Services
             if (locations.TryGetValue(parentPath, out var parent))
                 return parent;
 
-            var existingParent = await _unitOfWork.LocationRepository.FindByPathAsync(parentPath, cancellationToken);
+            var existingParent = await _unitOfWork.LocationRepository.FindByPath(parentPath, cancellationToken);
             if (existingParent != null)
             {
                 locations.Add(parentPath, existingParent);
@@ -115,7 +115,7 @@ namespace AdvertisingPlatforms.Domain.Services
             {
                 newParent = new LocationDb(parentPath, null);
                 locations.Add(parentPath, newParent);
-                await _unitOfWork.LocationRepository.AddAsync(newParent, cancellationToken);
+                await _unitOfWork.LocationRepository.Add(newParent, cancellationToken);
                 _logger.LogInformation(LogMessages.LOCATION_CREATED, parentPath);
             }
 
@@ -132,7 +132,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
             foreach (var name in uniqueNames)
             {
-                var existingAdvertisement = await _unitOfWork.AdvertisementRepository.FindByNameAsync(name, cancellationToken);
+                var existingAdvertisement = await _unitOfWork.AdvertisementRepository.FindByName(name, cancellationToken);
                 if (existingAdvertisement != null)
                 {
                     advertisementDictionary.Add(name, existingAdvertisement);
@@ -143,7 +143,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
                 var advertisement = new AdvertisementDb(name);
                 advertisementDictionary.Add(advertisement.Name, advertisement);
-                await _unitOfWork.AdvertisementRepository.AddAsync(advertisement, cancellationToken);
+                await _unitOfWork.AdvertisementRepository.Add(advertisement, cancellationToken);
                 _logger.LogInformation(LogMessages.ADVERTISEMENT_CREATED, name);
                 addedCount++;
             }
@@ -176,7 +176,7 @@ namespace AdvertisingPlatforms.Domain.Services
                         throw new InvalidOperationException($"Advertisement '{dto.AdvertisementName}' not found");
                     }
 
-                    var exists = await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocationAsync(
+                    var exists = await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocation(
                         advertisement.Id, location.Id, cancellationToken);
 
                     if (exists)
@@ -193,7 +193,7 @@ namespace AdvertisingPlatforms.Domain.Services
                         Location = location
                     };
 
-                    await _unitOfWork.AdvertisingPlatformRepository.AddAsync(platform, cancellationToken);
+                    await _unitOfWork.AdvertisingPlatformRepository.Add(platform, cancellationToken);
                     _logger.LogInformation(LogMessages.PLATFORM_CREATED, 
                         dto.AdvertisementName, normalizedPath);
                     addedCount++;

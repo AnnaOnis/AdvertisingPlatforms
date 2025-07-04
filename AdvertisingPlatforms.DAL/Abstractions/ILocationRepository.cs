@@ -4,7 +4,7 @@ namespace AdvertisingPlatforms.DAL.Abstractions
 {
     public interface ILocationRepository : IRepository<LocationDb>
     {
-        Task<LocationDb?> FindByPathAsync(string path, CancellationToken cancellationToken);
-        Task<bool> ExistsByPathAsync(string path, CancellationToken cancellationToken);
+        Task<LocationDb?> FindByPath(string path, CancellationToken cancellationToken);
+        Task<bool> ExistsByPath(string path, CancellationToken cancellationToken);
     }
 }

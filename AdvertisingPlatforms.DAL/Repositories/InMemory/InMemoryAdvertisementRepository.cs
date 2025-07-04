@@ -11,12 +11,12 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
     {
         public InMemoryAdvertisementRepository() { }
 
-        public Task<AdvertisementDb?> FindByNameAsync(string name, CancellationToken cancellationToken)
+        public Task<AdvertisementDb?> FindByName(string name, CancellationToken cancellationToken)
         {
             return Task.FromResult(_entityById.Values.FirstOrDefault(x => x.Name == name));
         }
 
-        public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken)
+        public Task<bool> ExistsByName(string name, CancellationToken cancellationToken)
         {
             return Task.FromResult(ExistsByName(name));
         }

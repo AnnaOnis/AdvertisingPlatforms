@@ -15,7 +15,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         {
         }
 
-        public async Task<IReadOnlyCollection<AdvertisingPlatformDb>> FindByLocationAsync(LocationDb location, 
+        public async Task<IReadOnlyCollection<AdvertisingPlatformDb>> FindByLocation(LocationDb location, 
             CancellationToken cancellationToken, 
             AdvertisingPlatformsSortDelegate? sortDelegate = null)
         {
@@ -36,7 +36,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
             return platforms;
         }
 
-        public override async Task<AdvertisingPlatformDb> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public override async Task<AdvertisingPlatformDb> GetById(Guid id, CancellationToken cancellationToken)
         {
             return await Entities
                 .Include(platform => platform.Advertisement)
@@ -44,7 +44,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
                 .FirstAsync(platform => platform.Id == id, cancellationToken);
         }
 
-        public override async Task<IReadOnlyCollection<AdvertisingPlatformDb>> GetAllAsync(CancellationToken cancellationToken)
+        public override async Task<IReadOnlyCollection<AdvertisingPlatformDb>> GetAll(CancellationToken cancellationToken)
         {
             return await  Entities
                 .Include(platform => platform.Advertisement)
@@ -52,7 +52,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<bool> ExistsByAdvertisementAndLocationAsync(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
+        public async Task<bool> ExistsByAdvertisementAndLocation(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
             var result = await Entities.AnyAsync(
                 platform => platform.LocationId == locationId 
