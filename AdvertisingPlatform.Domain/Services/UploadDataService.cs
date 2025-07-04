@@ -42,7 +42,7 @@ namespace AdvertisingPlatforms.Domain.Services
             _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
         }
 
-        private async Task<Dictionary<string, LocationDb>> CreateLocations(IReadOnlyCollection<ParseDataDTO> parseData, CancellationToken cancellationToken)
+        private async Task<Dictionary<string, LocationDb>> CreateLocations(IReadOnlyCollection<ParseDataDto> parseData, CancellationToken cancellationToken)
         {
             var locationDictionary = new Dictionary<string, LocationDb>();
             var addedCount = 0;
@@ -122,7 +122,7 @@ namespace AdvertisingPlatforms.Domain.Services
             return newParent;
         }
 
-        private async Task<Dictionary<string, AdvertisementDb>> CreateAdvertisements(IReadOnlyCollection<ParseDataDTO> parseData,
+        private async Task<Dictionary<string, AdvertisementDb>> CreateAdvertisements(IReadOnlyCollection<ParseDataDto> parseData,
             CancellationToken cancellationToken)
         {
             var advertisementDictionary = new Dictionary<string, AdvertisementDb>();
@@ -152,7 +152,7 @@ namespace AdvertisingPlatforms.Domain.Services
             return advertisementDictionary;
         }
 
-        private async Task CreateAdvettisingPlatform(IReadOnlyCollection<ParseDataDTO> parseData, 
+        private async Task CreateAdvettisingPlatform(IReadOnlyCollection<ParseDataDto> parseData, 
             Dictionary<string, LocationDb> locations,
             Dictionary<string, AdvertisementDb> advertisements,
             CancellationToken cancellationToken)

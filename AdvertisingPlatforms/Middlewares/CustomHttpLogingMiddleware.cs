@@ -3,8 +3,9 @@ using System.Diagnostics;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Web.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
+using AdvertisingPlatforms.Base.Extensions;
 using Microsoft.Extensions.Options;
+using AdvertisingPlatforms.Web.Extensions;
 
 namespace AdvertisingPlatforms.Web.Middlewares
 {
@@ -13,6 +14,7 @@ namespace AdvertisingPlatforms.Web.Middlewares
         private readonly RequestDelegate _next;
         private readonly ILogger<CustomHttpLogingMiddleware> _logger;
         private readonly LoggingSettings _settings;
+        private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         public CustomHttpLogingMiddleware(RequestDelegate next, 
             ILogger<CustomHttpLogingMiddleware> logger,
@@ -21,6 +23,11 @@ namespace AdvertisingPlatforms.Web.Middlewares
             _next = next;
             _logger = logger;
             _settings = options.Value;
+            _jsonSerializerOptions = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -57,7 +64,7 @@ namespace AdvertisingPlatforms.Web.Middlewares
                 DurationMs: durationMs
             );
 
-            _logger.LogInformation("HTTP Log:\n{JsonLog}", HttpLogToJson(httpLog));
+            _logger.LogInformation("HTTP Log:\n{JsonLog}", JsonSerializer.Serialize(httpLog, _jsonSerializerOptions));
         }
 
         private bool ShouldSkipLogging(HttpContext context)
@@ -84,7 +91,7 @@ namespace AdvertisingPlatforms.Web.Middlewares
                 Path: request.Path,
                 QueryString: request.QueryString.ToString(),
                 Headers: _settings.IncludeHeaders
-                    ? GetFilteredHeaders(request.Headers) : [],
+                    ? request.Headers.GetFilteredHeaders() : [],
                 Body: await ReadAndProcessBodyAsync(
                     request.Body, 
                     request.ContentType, 
@@ -108,21 +115,6 @@ namespace AdvertisingPlatforms.Web.Middlewares
             );
         }
 
-        private Dictionary<string, string> GetFilteredHeaders(IHeaderDictionary headers)
-        {
-            foreach (var header in HttpConstants.RequestHeadersToRemove)
-            {
-                headers.Remove(header);
-            }
-
-            var result = new Dictionary<string, string>();
-            foreach (var (key, value) in headers)
-            {
-                result[key] = value.ToString();
-            }
-            return result;
-        }
-
         private async Task<string?> ReadAndProcessBodyAsync(
             Stream stream,
             string? contentType,
@@ -133,7 +125,7 @@ namespace AdvertisingPlatforms.Web.Middlewares
             if (stream.Length > maxSize)
                 return $"[BODY_TOO_LARGE: {stream.Length} bytes]";
 
-            if (!IsTextContent(contentType))
+            if (!contentType.IsTextContent())
                 return $"[CONTENT_IS_NOT_TEXT: {contentType}]";
 
             using var reader = new StreamReader(stream, leaveOpen: true);
@@ -142,32 +134,6 @@ namespace AdvertisingPlatforms.Web.Middlewares
             if (stream.CanSeek) stream.Seek(0, SeekOrigin.Begin);
 
             return content;
-        }
-
-        private bool IsTextContent(string? contentType)
-        {
-            if (string.IsNullOrEmpty(contentType)) return false;
-
-            var textTypes = new[]
-            {
-                "application/json",
-                "text/plain",
-                "application/xml",
-            };
-
-            return textTypes.Any(t => contentType.Contains(t));
-        }
-
-        private string HttpLogToJson(HttpLog httpLog)
-        {
-            var jsonOptions = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-            };
-
-            string jsonLog = JsonSerializer.Serialize(httpLog, jsonOptions);
-            return jsonLog;
         }
     }
 }

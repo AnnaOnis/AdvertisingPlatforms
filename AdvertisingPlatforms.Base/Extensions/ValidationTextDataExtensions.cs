@@ -22,5 +22,19 @@ namespace AdvertisingPlatforms.Base.Extensions
             if (string.IsNullOrWhiteSpace(location))
                 throw new DomainValidationException("Location cannot be empty");
         }
+
+        public static bool IsTextContent(this string? contentType)
+        {
+            if (string.IsNullOrEmpty(contentType)) return false;
+
+            var textTypes = new[]
+            {
+                "application/json",
+                "text/plain",
+                "application/xml",
+            };
+
+            return textTypes.Any(t => contentType.Contains(t));
+        }
     }
 }

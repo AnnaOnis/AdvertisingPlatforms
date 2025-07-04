@@ -33,11 +33,11 @@ namespace AdvertisingPlatforms.Web.Middlewares
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
             }
-            catch (EntityAlreadyExistsExeption exp) 
+            catch (EntityAlreadyExistsExсeption exp) 
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.Conflict);
             }
-            catch (EntityNotFoundExeption exp)
+            catch (EntityNotFoundExсeption exp)
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.NotFound);
             }

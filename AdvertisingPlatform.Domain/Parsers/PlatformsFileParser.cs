@@ -18,7 +18,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             _logger = logger;
         }
 
-        public IReadOnlyList<ParseDataDTO> ParseFile(Stream stream)
+        public IReadOnlyList<ParseDataDto> ParseFile(Stream stream)
         {
             _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
             using var reader = new StreamReader(stream);
@@ -28,7 +28,7 @@ namespace AdvertisingPlatforms.Domain.Parser
                 TextSeparators.CONTENT_LINE_SEPARATOR_LF], 
                 StringSplitOptions.RemoveEmptyEntries);
 
-            var result = new List<ParseDataDTO>();
+            var result = new List<ParseDataDto>();
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
@@ -45,7 +45,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             return result;
         }
 
-        private ParseDataDTO ParseLine(string line)
+        private ParseDataDto ParseLine(string line)
         {
             line.ValidateContentLine();
 
@@ -64,7 +64,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             if (locationPaths.Any())
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
 
-            return new ParseDataDTO(name, locationPaths);
+            return new ParseDataDto(name, locationPaths);
         }
     }
 }

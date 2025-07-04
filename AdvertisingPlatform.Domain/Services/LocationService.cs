@@ -25,7 +25,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
+                throw new EntityNotFoundExñeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
             var locationDb = await _unitOfWork.LocationRepository.GetByIdAsync(locationId, cancellationToken);
             var location = _factory.Create(locationDb);
@@ -43,11 +43,11 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (await _unitOfWork.LocationRepository.ExistsByPathAsync(locationPath, cancellationToken))
             {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + locationPath);
+                throw new EntityAlreadyExistsExñeption(ErrorMessages.ENTITY_ALREADY_EXISTS + locationPath);
             }
             if(parentId != null && !await _unitOfWork.LocationRepository.ExistsAsync(parentId.Value, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, parentId);
+                throw new EntityNotFoundExñeption(ErrorMessages.ENTITY_NOT_FOUND, parentId);
             }
             var locationDb = new LocationDb(locationPath, parentId);
             await _unitOfWork.LocationRepository.AddAsync(locationDb, cancellationToken);
@@ -60,15 +60,15 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
+                throw new EntityNotFoundExñeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
             if (newparentId != null && !await _unitOfWork.LocationRepository.ExistsAsync(newparentId.Value, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, newparentId);
+                throw new EntityNotFoundExñeption(ErrorMessages.ENTITY_NOT_FOUND, newparentId);
             }
             if (await _unitOfWork.LocationRepository.ExistsByPathAsync(newLocationPath, cancellationToken))
             {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS + newLocationPath);
+                throw new EntityAlreadyExistsExñeption(ErrorMessages.ENTITY_ALREADY_EXISTS + newLocationPath);
             }
             var locationDb = await _unitOfWork.LocationRepository.GetByIdAsync(locationId, cancellationToken);
             locationDb.Path = newLocationPath;
@@ -81,7 +81,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
+                throw new EntityNotFoundExñeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
             await _unitOfWork.LocationRepository.DeleteAsync(locationId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();

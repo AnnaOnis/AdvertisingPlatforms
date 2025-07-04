@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace AdvertisingPlatforms.Domain.DTOs
 {
-    public class ParseDataDTO
+    public class ParseDataDto
     {
         public string AdvertisementName { get; set; }
         public IEnumerable<string> LocationPaths { get; set; }
 
-        public ParseDataDTO(string advertisementName, IEnumerable<string> locationPaths)
+        public ParseDataDto(string advertisementName, IEnumerable<string> locationPaths)
         {
             AdvertisementName = advertisementName;
             LocationPaths = locationPaths;

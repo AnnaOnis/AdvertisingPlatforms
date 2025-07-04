@@ -1,6 +1,4 @@
-﻿using AdvertisingPlatforms.Base.Exceptions;
-using AdvertisingPlatforms.Base.Constants;
-using AdvertisingPlatforms.DAL.Abstractions;
+﻿using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using Microsoft.EntityFrameworkCore;
 

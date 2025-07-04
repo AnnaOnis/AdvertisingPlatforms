@@ -27,7 +27,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
             }
             var platformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
             var platform = _factory.Create(platformDb);
@@ -45,17 +45,17 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(advertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
             }
             if (!await _unitOfWork.LocationRepository.ExistsAsync(locationId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, locationId);
             }
             if (await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocationAsync(advertisementId, 
                 locationId, 
                 cancellationToken))
             {
-                throw new EntityAlreadyExistsExeption(ErrorMessages.ENTITY_ALREADY_EXISTS);
+                throw new EntityAlreadyExistsExсeption(ErrorMessages.ENTITY_ALREADY_EXISTS);
             }
             var platformDb = new AdvertisingPlatformDb(advertisementId, locationId);
             await _unitOfWork.AdvertisingPlatformRepository.AddAsync(platformDb, cancellationToken);
@@ -68,15 +68,15 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
             }
             if (!await _unitOfWork.AdvertisementRepository.ExistsAsync(newAdvertisementId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, newAdvertisementId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, newAdvertisementId);
             }
             if (!await _unitOfWork.LocationRepository.ExistsAsync(newLocationId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, newLocationId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, newLocationId);
             }
             var updatingPlatformDb = await _unitOfWork.AdvertisingPlatformRepository.GetByIdAsync(platformId, cancellationToken);
             updatingPlatformDb.AdvertisementId = newAdvertisementId;
@@ -89,7 +89,7 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             if (!await _unitOfWork.AdvertisingPlatformRepository.ExistsAsync(platformId, cancellationToken))
             {
-                throw new EntityNotFoundExeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
+                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, platformId);
             }
             await _unitOfWork.AdvertisingPlatformRepository.DeleteAsync(platformId, cancellationToken);
             await _unitOfWork.SaveChangesAsync();
