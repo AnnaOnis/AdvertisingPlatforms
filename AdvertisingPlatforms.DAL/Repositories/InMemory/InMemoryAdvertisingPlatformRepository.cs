@@ -41,7 +41,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if (!_entityById.TryGetValue(platform.Id, out var existingPlatform))
             {
-                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, platform.Id);
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, platform.Id);
             }
 
             await RemovePlatformFromLocationPrefixes(existingPlatform);
@@ -55,7 +55,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if (!_entityById.TryRemove(id, out var platform))
             {
-                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, id);
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, id);
             }
 
             await RemovePlatformFromLocationPrefixes(platform);

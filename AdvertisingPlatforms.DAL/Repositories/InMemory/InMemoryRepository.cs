@@ -14,7 +14,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if(!_entityById.TryAdd(entity.Id, entity))
             {
-                throw new EntityAlreadyExistsExсeption(ErrorMessages.ENTITY_ALREADY_EXISTS +  entity.Id);
+                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS +  entity.Id);
             }
             return Task.CompletedTask;
         }
@@ -32,7 +32,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if(!_entityById.TryRemove(id, out var entity))
             {
-                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, id);
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, id);
             }
             return Task.CompletedTask;
         }
@@ -46,7 +46,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
         {
             if (!_entityById.TryGetValue(id, out var entity))
             {
-                throw new EntityNotFoundExсeption(ErrorMessages.ENTITY_NOT_FOUND, id);
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, id);
             }
 
             return Task.FromResult(entity);
