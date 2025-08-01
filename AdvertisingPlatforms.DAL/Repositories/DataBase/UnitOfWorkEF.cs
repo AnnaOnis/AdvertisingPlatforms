@@ -1,33 +1,46 @@
-﻿using AdvertisingPlatforms.DAL.Abstractions;
+﻿using System.Reflection.Metadata.Ecma335;
+using AdvertisingPlatforms.DAL.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 {
     public class UnitOfWorkEF : IUnitOfWork
     {
         private readonly AdvertisingPlatformsDbContext _dbContext;
-        private readonly IAdvertisementRepository _advertisementRepository;
-        private readonly IAdvertisingPlatformRepository _advertisingPlatformRepository;
-        private readonly ILocationRepository _locationRepository;
+        private readonly IDbContextTransaction _transaction;
+        private bool _disposed;
 
-        public IAdvertisementRepository AdvertisementRepository => _advertisementRepository;
-        public IAdvertisingPlatformRepository AdvertisingPlatformRepository => _advertisingPlatformRepository;
-        public ILocationRepository LocationRepository => _locationRepository;
-  
-
-        public UnitOfWorkEF(AdvertisingPlatformsDbContext dbContext, 
-            IAdvertisementRepository advertisementRepository,
-            IAdvertisingPlatformRepository advertisingPlatformRepository,
-            ILocationRepository locationRepository)
+        public UnitOfWorkEF(AdvertisingPlatformsDbContext dbContext)
         {
             _dbContext = dbContext;
-            _advertisementRepository = advertisementRepository;
-            _advertisingPlatformRepository = advertisingPlatformRepository;
-            _locationRepository = locationRepository;
+            _transaction = _dbContext.Database.BeginTransaction();
         }
 
         public async Task<int> SaveChangesAsync()
         {
             return await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task Commit()
+        {
+            await _transaction.CommitAsync();
+        }
+
+        public async Task RollBack()
+        {
+            await _transaction.RollbackAsync();
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _dbContext.Dispose();
+                _transaction?.Dispose();
+                _disposed = true;
+            }
+            GC.SuppressFinalize(this);
         }
     }
 }

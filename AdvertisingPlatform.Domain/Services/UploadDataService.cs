@@ -4,24 +4,30 @@ using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
-using AdvertisingPlatforms.Domain.Parser;
 using Microsoft.Extensions.Logging;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
     public class UploadDataService : IUploadDataService
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IAdvertisingPlatformParser _fileParser;
         private readonly ILogger<UploadDataService> _logger;
+        private readonly IAdvertisementRepository _advertisementRepository;
+        private readonly ILocationRepository _locationRepository;
+        private readonly IAdvertisingPlatformRepository _advertisingPlatformRepository;
 
-        public UploadDataService(IUnitOfWork unitOfWork,
+        public UploadDataService(
             IAdvertisingPlatformParser fileParser,
-            ILogger<UploadDataService> logger)
+            ILogger<UploadDataService> logger,
+            IAdvertisementRepository advertisementRepository,
+            ILocationRepository locationRepository,
+            IAdvertisingPlatformRepository advertisingPlatformRepository)
         {
-            _unitOfWork = unitOfWork;
             _fileParser = fileParser;
             _logger = logger;
+            _advertisementRepository = advertisementRepository;
+            _locationRepository = locationRepository;
+            _advertisingPlatformRepository = advertisingPlatformRepository;
         }
 
         public async Task UploadDataFromFile(IFileData fileData, CancellationToken cancellationToken)
@@ -36,8 +42,6 @@ namespace AdvertisingPlatforms.Domain.Services
             var locationDictionary = await CreateLocations(parseDataItems, cancellationToken);
             var advertisementDictionary = await CreateAdvertisements(parseDataItems, cancellationToken);
             await CreateAdvettisingPlatform(parseDataItems, locationDictionary, advertisementDictionary, cancellationToken);
-
-            await _unitOfWork.SaveChangesAsync();
             
             _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
         }
@@ -59,7 +63,7 @@ namespace AdvertisingPlatforms.Domain.Services
             {
                 if (locationDictionary.ContainsKey(path)) continue;
 
-                var existingLocation = await _unitOfWork.LocationRepository.FindByPath(path, cancellationToken);
+                var existingLocation = await _locationRepository.FindByPath(path, cancellationToken);
                 if (existingLocation != null)
                 {
                     locationDictionary.Add(path, existingLocation);
@@ -72,7 +76,7 @@ namespace AdvertisingPlatforms.Domain.Services
                 var location = new LocationDb(path, parent?.Id);
 
                 locationDictionary.Add(path, location);
-                await _unitOfWork.LocationRepository.Add(location, cancellationToken);
+                await _locationRepository.Add(location, cancellationToken);
                 _logger.LogInformation(LogMessages.LOCATION_CREATED, path);
                 addedCount++;
             }
@@ -101,7 +105,7 @@ namespace AdvertisingPlatforms.Domain.Services
             if (locations.TryGetValue(parentPath, out var parent))
                 return parent;
 
-            var existingParent = await _unitOfWork.LocationRepository.FindByPath(parentPath, cancellationToken);
+            var existingParent = await _locationRepository.FindByPath(parentPath, cancellationToken);
             if (existingParent != null)
             {
                 locations.Add(parentPath, existingParent);
@@ -115,7 +119,7 @@ namespace AdvertisingPlatforms.Domain.Services
             {
                 newParent = new LocationDb(parentPath, null);
                 locations.Add(parentPath, newParent);
-                await _unitOfWork.LocationRepository.Add(newParent, cancellationToken);
+                await _locationRepository.Add(newParent, cancellationToken);
                 _logger.LogInformation(LogMessages.LOCATION_CREATED, parentPath);
             }
 
@@ -132,7 +136,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
             foreach (var name in uniqueNames)
             {
-                var existingAdvertisement = await _unitOfWork.AdvertisementRepository.FindByName(name, cancellationToken);
+                var existingAdvertisement = await _advertisementRepository.FindByName(name, cancellationToken);
                 if (existingAdvertisement != null)
                 {
                     advertisementDictionary.Add(name, existingAdvertisement);
@@ -143,7 +147,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
                 var advertisement = new AdvertisementDb(name);
                 advertisementDictionary.Add(advertisement.Name, advertisement);
-                await _unitOfWork.AdvertisementRepository.Add(advertisement, cancellationToken);
+                await _advertisementRepository.Add(advertisement, cancellationToken);
                 _logger.LogInformation(LogMessages.ADVERTISEMENT_CREATED, name);
                 addedCount++;
             }
@@ -176,7 +180,7 @@ namespace AdvertisingPlatforms.Domain.Services
                         throw new InvalidOperationException($"Advertisement '{dto.AdvertisementName}' not found");
                     }
 
-                    var exists = await _unitOfWork.AdvertisingPlatformRepository.ExistsByAdvertisementAndLocation(
+                    var exists = await _advertisingPlatformRepository.ExistsByAdvertisementAndLocation(
                         advertisement.Id, location.Id, cancellationToken);
 
                     if (exists)
@@ -193,7 +197,7 @@ namespace AdvertisingPlatforms.Domain.Services
                         Location = location
                     };
 
-                    await _unitOfWork.AdvertisingPlatformRepository.Add(platform, cancellationToken);
+                    await _advertisingPlatformRepository.Add(platform, cancellationToken);
                     _logger.LogInformation(LogMessages.PLATFORM_CREATED, 
                         dto.AdvertisementName, normalizedPath);
                     addedCount++;

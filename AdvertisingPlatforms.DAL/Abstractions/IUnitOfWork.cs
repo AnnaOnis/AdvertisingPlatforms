@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace AdvertisingPlatforms.DAL.Abstractions
 {
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
-        IAdvertisementRepository AdvertisementRepository { get; }
-        IAdvertisingPlatformRepository AdvertisingPlatformRepository { get; }
-        ILocationRepository LocationRepository { get; }
         Task<int> SaveChangesAsync();
+        Task Commit();
+        Task RollBack();
     }
 }
