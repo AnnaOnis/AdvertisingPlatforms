@@ -1,4 +1,6 @@
+using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Web.Configurations;
+using Serilog;
 
 namespace AdvertisingPlatforms
 {
@@ -8,13 +10,29 @@ namespace AdvertisingPlatforms
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.ConfigureApplicationServices(builder.Configuration);
+            builder.AddLogging();
 
-            var app = builder.Build();
+            try
+            {
+                Log.Information(LogMessages.APP_START);
 
-            app.ConfigureApplicationMiddleware();
+                builder.Services.ConfigureApplicationServices(builder.Configuration);
 
-            app.Run();
+                var app = builder.Build();
+
+                app.ConfigureApplicationMiddleware();
+
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, LogMessages.APP_ERROR);
+            }
+            finally
+            {
+                Log.Information(LogMessages.APP_STOP);
+                Log.CloseAndFlush();
+            }
         }
     }
 }

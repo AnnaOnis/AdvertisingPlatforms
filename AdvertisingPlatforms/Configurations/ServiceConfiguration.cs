@@ -22,14 +22,13 @@ namespace AdvertisingPlatforms.Web.Configurations
     {
         public static void ConfigureApplicationServices(this IServiceCollection services, IConfiguration config)
         {
-            AddInfrastructure(services, config);
+            AddInfrastructure(services);
             AddApplicationComponents(services, config);
             AddFluentValidation(services);
         }
 
-        private static void AddInfrastructure(IServiceCollection services, IConfiguration config)
+        private static void AddInfrastructure(IServiceCollection services)
         {
-            AddLogging(services, config);
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
@@ -56,17 +55,6 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddScoped<IValidator<UpdateLocationRequest>, UpdateLocationRequestValidator>();
             services.AddScoped<IValidator<CreateAdvertisementRequest>, CreateAdvertisementRequestValidator>();
             services.AddScoped<IValidator<UpdateAdvertisementRequest>, UpdateAdvertisementRequestValidator>();
-        }
-
-        private static void AddLogging(IServiceCollection services, IConfiguration config)
-        {
-            services.AddLogging(logging =>
-            {
-                logging.AddConsole();
-                logging.AddDebug();
-            });
-
-            services.Configure<LoggingSettings>(config.GetSection("LogOptions"));
         }
 
         private static void AddDomainServices(IServiceCollection services)
