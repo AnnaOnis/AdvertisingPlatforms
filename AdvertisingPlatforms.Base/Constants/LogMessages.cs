@@ -2,6 +2,9 @@
 {
     public static class LogMessages
     {
+        public const string APP_START = "Application starting...";
+        public const string APP_STOP = "Shut down completed. Application stopped.";
+        public const string APP_ERROR = "Сritical error during application initialization. The app is stopped.";
         public const string STARTING_FILE_UPLOAD = "Starting file upload: {FileName}";
         public const string PARSING_FILE_CONTENT = "Parsing file content";
         public const string UPLOADING_PLATFORMS = "Uploading {Count} platforms";
