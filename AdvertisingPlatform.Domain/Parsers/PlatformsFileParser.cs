@@ -5,6 +5,7 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using Microsoft.Extensions.Logging;
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Domain.DTOs;
+using System.Text.Json;
 
 namespace AdvertisingPlatforms.Domain.Parser
 {
@@ -21,11 +22,91 @@ namespace AdvertisingPlatforms.Domain.Parser
         public IReadOnlyList<ParseDataDto> ParseFile(Stream stream)
         {
             _logger.LogDebug(LogMessages.PARSING_FILE_CONTENT);
-            using var reader = new StreamReader(stream);
-
+            StreamReader reader = new StreamReader(stream);
             var content = reader.ReadToEnd();
-            var lines = content.Split([TextSeparators.CONTENT_LINE_SEPARATOR_CRLF, 
-                TextSeparators.CONTENT_LINE_SEPARATOR_LF], 
+
+            if(TryParseJson(content, out var result))
+            {
+                _logger.LogDebug("File parsed as JSON successfully");
+                return result;
+            }
+
+            _logger.LogDebug("Parsing as text file");
+            return ParseTextContent(content);
+        }
+
+        private bool TryParseJson(string content, out IReadOnlyList<ParseDataDto>? result)
+        {
+            try
+            {
+                var parsedData = JsonSerializer.Deserialize<List<ParseDataDto>>(content, GetJsonSerializerOptions());
+
+                if (parsedData == null) 
+                {
+                    result = null;
+                    return false;
+                }
+
+                if (parsedData.Count == 0)
+                {
+                    _logger.LogWarning("JSON-файл корректен, но не содержит данных.");
+                    result = parsedData;
+                    return true;
+                }
+
+                if (parsedData.Any(item => item == null))
+                {
+                    throw new DomainValidationException(ErrorMessages.ENTITY_CAN_NOT_BE_NULL);
+                }
+
+                foreach (var item in parsedData)
+                {
+                    item.AdvertisementName.ValidatePlatformName();
+
+                    if (item.LocationPaths == null || !item.LocationPaths.Any())
+                    {
+                        throw new DomainValidationException(
+                            ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
+                    }
+
+                    item.LocationPaths = item.LocationPaths
+                        .Select(path =>
+                        {
+                            path.ValidateLocation();
+                            return path.NormalizeLocationPath();
+                        })
+                        .ToList();
+                }
+
+                result = parsedData;
+                return true;
+            }
+            catch (JsonException)
+            {
+                result = null;
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "JSON parsing error");
+                throw; 
+            }
+        }
+
+        private static JsonSerializerOptions GetJsonSerializerOptions()
+        {
+            return new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+        }
+
+        private IReadOnlyList<ParseDataDto> ParseTextContent(string content)
+        {
+            var lines = content.Split([TextSeparators.CONTENT_LINE_SEPARATOR_CRLF,
+                TextSeparators.CONTENT_LINE_SEPARATOR_LF],
                 StringSplitOptions.RemoveEmptyEntries);
 
             var result = new List<ParseDataDto>();

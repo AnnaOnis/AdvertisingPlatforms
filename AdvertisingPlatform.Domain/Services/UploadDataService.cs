@@ -5,6 +5,7 @@ using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
 using Microsoft.Extensions.Logging;
+using AdvertisingPlatforms.Base.Exceptions;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -35,9 +36,14 @@ namespace AdvertisingPlatforms.Domain.Services
             _logger.LogInformation(LogMessages.STARTING_FILE_UPLOAD, fileData.FileName);
             
             using var stream = await fileData.FileToMemoryStreamAsync(cancellationToken);
-            var parseDataItems = _fileParser.ParseFile(stream);
 
             _logger.LogInformation(LogMessages.PARSING_FILE_CONTENT);
+            var parseDataItems = _fileParser.ParseFile(stream);
+
+            if (parseDataItems == null || parseDataItems.Count == 0)
+            {
+                throw new DomainValidationException(ErrorMessages.NO_DATA_TO_DOWNLOAD);
+            }
 
             var locationDictionary = await CreateLocations(parseDataItems, cancellationToken);
             var advertisementDictionary = await CreateAdvertisements(parseDataItems, cancellationToken);
