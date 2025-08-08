@@ -40,7 +40,7 @@ namespace AdvertisingPlatforms.Web.Controllers
 
             var fileData = new FormFileAdapter(request.File);
 
-            await _uploadDataService.UploadDataFromFile(fileData, cancellationToken);
+            await _uploadDataService.UploadDataFromFile(fileData, UploadDataSources.FILE, cancellationToken);
 
             return Ok();
         }

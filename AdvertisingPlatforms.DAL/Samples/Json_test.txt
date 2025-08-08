@@ -1,0 +1,22 @@
+[
+ {
+    "AdvertisementName": "Рекламное агентство 'Звезда'",
+    "LocationPaths": ["/ru/msk", "/ru/spb"]
+  },
+  {
+    "AdvertisementName": "Медиа Группа 'Восток'",
+    "LocationPaths": ["/ru/dv", "/ru/vostok"]
+  },
+  {
+    "AdvertisementName": "Интернет-реклама 'Онлайн'",
+    "LocationPaths": ["/ru"]
+  },
+  {
+    "AdvertisementName": "ТВ Реклама",
+    "LocationPaths": ["/ru/msk/tv", "/ru/spb/tv"]
+  },
+  {
+    "AdvertisementName": "Радио Волна",
+    "LocationPaths": ["/ru/radio", "/ru/msk/radio", "/ru/spb/radio"]
+  },
+]

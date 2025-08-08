@@ -15,6 +15,7 @@ using AdvertisingPlatforms.Web.Validators;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
 using FluentValidation.AspNetCore;
 using AdvertisingPlatforms.Web.Logging;
+using AdvertisingPlatforms.Domain.Parsers;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -62,8 +63,10 @@ namespace AdvertisingPlatforms.Web.Configurations
             services.AddScoped<IAdvertisingPlatformService, AdvertisingPlatformService>();
             services.AddScoped<ILocationService, LocationService>();
             services.AddScoped<IAdvertisementService, AdvertisementService>();
-            services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
             services.AddScoped<IUploadDataService, UploadDataService>();
+            services.AddSingleton<IAdvertisingPlatformParser, PlatformsFileParser>();
+            services.AddSingleton<IFileParseStrategy, JsonFileParseStrategy>();
+            services.AddSingleton<IFileParseStrategy, TextFileParseStrategy>();
         }
 
         private static void AddDomainModelFactories(IServiceCollection services)
@@ -85,6 +88,7 @@ namespace AdvertisingPlatforms.Web.Configurations
                 services.AddScoped<IAdvertisingPlatformRepository, EFAdvertisingPlatformRepository>();
                 services.AddScoped<IAdvertisementRepository, EFAdvertisementRepository>();
                 services.AddScoped<ILocationRepository, EFLocationRepository>();
+                services.AddScoped<IUploadErrorRepository, EFUploadErrorRepository>();
                 services.AddScoped<IUnitOfWork, UnitOfWorkEF>();
             }
             else

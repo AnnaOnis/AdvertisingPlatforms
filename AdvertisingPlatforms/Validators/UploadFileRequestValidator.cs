@@ -19,12 +19,12 @@ namespace AdvertisingPlatforms.Web.Validators
                 .WithMessage("File size cannot exceed 10MB");
 
             RuleFor(x => x.File.ContentType)
-                .Must(contentType => contentType.Equals(FileConstants.ALLOWED_CONTENT_TYPE, StringComparison.OrdinalIgnoreCase))
-                .WithMessage($"Only {FileConstants.ALLOWED_CONTENT_TYPE} files are allowed");
+                .Must(contentType => FileConstants.ALLOWED_CONTENT_TYPE.Contains(contentType, StringComparer.OrdinalIgnoreCase))
+                .WithMessage($"Допустимые типы файлов: {string.Join(", ", FileConstants.ALLOWED_CONTENT_TYPE)}");
 
             RuleFor(x => x.File.FileName)
-                .Must(fileName => Path.GetExtension(fileName).Equals(FileConstants.ALLOWED_EXTENSION, StringComparison.OrdinalIgnoreCase))
-                .WithMessage($"Only {FileConstants.ALLOWED_EXTENSION} files are allowed");
+                .Must(fileName => FileConstants.ALLOWED_EXTENSION.Contains(Path.GetExtension(fileName), StringComparer.OrdinalIgnoreCase))
+                .WithMessage($"Допустимые расширения файлов: {string.Join(", ", FileConstants.ALLOWED_EXTENSION)}");
         }
     }
 } 
