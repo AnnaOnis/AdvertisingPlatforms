@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using AdvertisingPlatforms.Base.Constants;
+﻿using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
 using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AdvertisingPlatforms.Domain.Parsers
 {
@@ -73,17 +71,22 @@ namespace AdvertisingPlatforms.Domain.Parsers
             line.ValidateContentLine();
 
             var parts = line.Split(TextSeparators.SEPARATOR_COLON, 2);
+            if (parts.Length < 2)
+                throw new DomainValidationException("Invalid format - missing colon separator or data after colon");
+
             var name = parts[0].Trim();
+            name.NormalizeAdvertisementName();
             name.ValidatePlatformName();
 
             var locationPaths = parts[1].Split(TextSeparators.SEPARATOR_COMMA)
                 .Select(locationPath =>
                 {
                     locationPath = locationPath.Trim();
-                    locationPath.ValidateLocation();
                     locationPath = locationPath.NormalizeLocationPath();
+                    locationPath.ValidateLocation();                   
                     return locationPath;
-                });
+                })
+                .ToList();
 
             if (!locationPaths.Any())
                 throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);

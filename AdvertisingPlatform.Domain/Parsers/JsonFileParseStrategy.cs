@@ -1,10 +1,11 @@
 ﻿using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.Base.Exceptions;
-using System.Text.Json;
+using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
 using Microsoft.Extensions.Logging;
-using AdvertisingPlatforms.Base.Extensions;
+using System.Text.Json;
+using System.Xml.Linq;
 
 namespace AdvertisingPlatforms.Domain.Parsers
 {
@@ -71,6 +72,7 @@ namespace AdvertisingPlatforms.Domain.Parsers
                     if (item == null)
                         throw new DomainValidationException(ErrorMessages.ENTITY_CAN_NOT_BE_NULL);
 
+                    item.AdvertisementName.NormalizeAdvertisementName();
                     item.AdvertisementName.ValidatePlatformName();
 
                     if (item.LocationPaths == null || !item.LocationPaths.Any())
@@ -79,8 +81,9 @@ namespace AdvertisingPlatforms.Domain.Parsers
                     item.LocationPaths = item.LocationPaths
                         .Select(path =>
                         {
+                            path.NormalizeLocationPath();
                             path.ValidateLocation();
-                            return path.NormalizeLocationPath();
+                            return path;
                         })
                         .ToList();
 

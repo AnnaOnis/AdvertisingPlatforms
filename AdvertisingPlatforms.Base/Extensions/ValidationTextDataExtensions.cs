@@ -1,4 +1,5 @@
 ﻿using AdvertisingPlatforms.Base.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace AdvertisingPlatforms.Base.Extensions
 {
@@ -21,6 +22,9 @@ namespace AdvertisingPlatforms.Base.Extensions
         {
             if (string.IsNullOrWhiteSpace(location))
                 throw new DomainValidationException("Location cannot be empty");
+
+            if (!Regex.IsMatch(location, @"^(/[a-z]+)+$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                throw new DomainValidationException("Invalid location format");
         }
 
         public static bool IsTextContent(this string? contentType)
