@@ -9,6 +9,7 @@ namespace AdvertisingPlatforms.DAL
         public DbSet<AdvertisementDb> Advertisements { get; set; }
         public DbSet<LocationDb> Locations { get; set; }
         public DbSet<AdvertisingPlatformDb> AdvertisingPlatforms { get; set; }
+        public DbSet<UploadErrorDb> UploadErrors { get; set; }
 
         public AdvertisingPlatformsDbContext(DbContextOptions<AdvertisingPlatformsDbContext> options)
             : base(options)

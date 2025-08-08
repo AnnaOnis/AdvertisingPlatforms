@@ -33,10 +33,7 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 
         public virtual async Task AddRange(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
         {
-            foreach (var entity in entities)
-            {
-                await Add(entity, cancellationToken);
-            }
+            await Entities.AddRangeAsync(entities, cancellationToken);
         }
 
         public virtual async Task Delete(Guid id, CancellationToken cancellationToken)

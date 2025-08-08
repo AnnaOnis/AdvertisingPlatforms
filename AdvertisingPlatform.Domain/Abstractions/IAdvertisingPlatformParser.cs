@@ -1,5 +1,4 @@
-﻿using AdvertisingPlatforms.DAL.Entities;
-using AdvertisingPlatforms.Domain.DTOs;
+﻿using AdvertisingPlatforms.Domain.DTOs;
 
 namespace AdvertisingPlatforms.Domain.Abstractions
 {
@@ -9,10 +8,17 @@ namespace AdvertisingPlatforms.Domain.Abstractions
     public interface IAdvertisingPlatformParser
     {
         /// <summary>
-        /// Parses a data stream containing platform information
+        /// Parses a file data containing platform information
         /// </summary>
-        /// <param name="stream">Data stream with text information</param>
+        /// <param name="fileData">File with text information</param>
         /// <returns>List of parsed platforms</returns>
-        IReadOnlyList<ParseDataDto> ParseFile(Stream stream);
+        Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> ParseFile(IFileData fileData, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Parses a stream data containing platform information
+        /// </summary>
+        /// <param name="stream">Stream with platform information</param>
+        /// <returns>List of parsed platforms</returns>
+        Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> ParseStream(Stream stream, string contentTypeOrExtension, CancellationToken cancellationToken);
     }
 }

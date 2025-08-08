@@ -1,0 +1,78 @@
+[
+  {
+    "AdvertisementName": "Глобал.Сервис",
+    "LocationPaths": [
+      "/ru/niz/bor",
+      "/ru/nvs/ber"
+    ]
+  },
+  {
+    "AdvertisementName": "Быстрый Товары",
+    "LocationPaths": [
+      "/ru/spb/pet",
+      "/ru/niz/dze",
+      "/ru/mos",
+      "/ru/kya/nor",
+      "/ru/svrd/vpy"
+    ]
+  },
+  {
+    "AdvertisementName": "Недвижимость Зеленый",
+    "LocationPaths": [
+      "/ru/niz",
+      "/ru/spb/pet"
+    ]
+  },
+  {
+    "AdvertisementName": "Яндекс Отдых",
+    "LocationPaths": [
+      "/ru/svrd/ekb",
+      "/ru/sak/kor",
+      "/ru/kry/evp",
+      "/ru/kda/soc",
+      "/ru/spb/kro"
+    ]
+  },
+  {
+    "AdvertisementName": "Быстрый.Плюс",
+    "LocationPaths": [
+      "/ru/spb",
+      "/ru/nvs/ber"
+    ]
+  },
+  {
+    "AdvertisementName": "Мега Здоровье",
+    "LocationPaths": [
+      "/ru/niz/dze"
+    ]
+  },
+  {
+    "AdvertisementName": "Яндекс Авто",
+    "LocationPaths": [
+      "/ru/mos/krl",
+      "/ru/kda/krr"
+    ]
+  },
+  {
+    "AdvertisementName": "Отдых Горячий",
+    "LocationPaths": [
+      "/ru/tat",
+      "/ru/spb/pet",
+      "/ru/tat/nch",
+      "/ru/nvs/ob",
+      "/ru/mos/bal"
+    ]
+  },
+  {
+    "AdvertisementName": "Глобал Работа",
+    "LocationPaths": [
+      "/ru/sak"
+    ]
+  },
+  {
+    "AdvertisementName": "Недвижимость Гид",
+    "LocationPaths": [
+      "/ru/nvs/ob"
+    ]
+  }
+]
