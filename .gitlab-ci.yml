@@ -1,0 +1,190 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/development/cicd/templates/
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - sast
+  - security_scan
+  - publish
+  - docker-publish
+  - migrate
+  - deploy
+  - dast
+
+variables:
+  DOTNET_VERSION: "9.0"
+  SOLUTION_FILE: "AdvertisingPlatforms.sln"
+  PROJECT_PATH: "AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj"
+  BUILD_CONFIGURATION: "Release"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
+  CONNECTION_STRING: "Server=88.218.62.221;Database=delivery4;User Id=user4;Password=P@ssw0rd_4;"
+  DOCKER_REGISTRY: "em-gitlab.ru:5050"
+  DOCKER_REGISTRY_PASSWORD: "GvnlTfqaYe/zhdu83fLVHXveP2k0jCrIJBCZXK2bm8w="
+  DOCKER_IMAGE: "em-gitlab.ru/em_dotnet_e5/advertisingplatformsanna"
+  DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
+  TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
+  NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
+
+  USER_PORT: 5004
+  SERVER_USER: root
+  SERVER_IP: 88.218.62.221
+  TEST: test
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .nuget/
+
+build-job:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - dotnet restore
+    - dotnet build --configuration Release --no-restore --output ./publish/
+  artifacts:
+    paths:
+      - "**/bin/Release/**"
+      - "**/publish/**"
+    expire_in: 1 week
+  only:
+    - modul_3
+
+unit-test-job:   # This job runs in the test stage.
+  stage: test    # It only starts when the job in the build stage completes successfully.
+  image: mcr.microsoft.com/dotnet/sdk:$DOTNET_VERSION
+  script:
+     - dotnet test
+  when: manual
+
+sonarqube-check-job:
+  stage: sast
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" 
+    GIT_DEPTH: "0"  
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  before_script:
+    - apt-get update -y && apt-get install -y openjdk-17-jdk
+    - dotnet tool install --global dotnet-sonarscanner
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+  script: 
+      - dotnet sonarscanner begin /k:"squ_539e994534987929c49c69d11d11815204b0003b" /d:sonar.login=$SONAR_TOKEN /d:sonar.host.url=$SONAR_HOST_URL
+      - dotnet build --configuration Release
+      - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
+  allow_failure: true
+  only:
+    - modul_3
+
+trivy-scan-job:
+  stage: security_scan
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  dependencies:
+    - build-job
+  script:
+    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format json -o trivy-report.json ./publish/
+    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format table ./publish/
+  artifacts:
+    paths:
+      - trivy-report.json
+    expire_in: 1 week
+  allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
+
+publish-job:
+  stage: publish
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - dotnet publish --configuration Release --output ./publish
+  artifacts:
+    paths:
+      - ./publish/
+    expire_in: 1 week
+  only:
+    - modul_3
+
+docker-publish-job:
+  stage: docker-publish
+  script:
+    - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
+    - docker build -t $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
+    - docker push $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
+  only:
+    - modul_3
+
+migrate-database-job:
+  stage: migrate
+  image: mcr.microsoft.com/dotnet/sdk:9.0
+  script:
+    - dotnet tool install --global dotnet-ef || true
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
+  when: manual
+  only:
+    - modul_3
+  allow_failure: true
+
+deploy-job:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache sshpass
+    - apk add --no-cache openssh-client
+    - apk add --no-cache openssh-askpass
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-keygen -p -P "password" -N "" -f /root/.ssh/id_rsa
+    - ssh-add /root/.ssh/id_rsa
+  script:
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+
+zap-scan-job:
+  stage: dast
+  allow_failure: true
+  image:
+    name: zaproxy/zap-stable
+  before_script:
+    - mkdir -p /zap/wrk
+    - whoami
+  script:
+    - zap-full-scan.py -t http://88.218.62.221:$USER_PORT/ -J report-$CI_COMMIT_SHORT_SHA.json -r report-$CI_COMMIT_SHORT_SHA.html
+  after_script:
+    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.json .
+    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.html .
+    - rm -rf /zap/wrk/* 
+    - pkill -f zap.sh || true
+    - exit 0
+  artifacts:
+    when: always
+    paths:
+      - report-$CI_COMMIT_SHORT_SHA.html
+      - report-$CI_COMMIT_SHORT_SHA.json
+    reports:
+      dast: report-$CI_COMMIT_SHORT_SHA.json
+      

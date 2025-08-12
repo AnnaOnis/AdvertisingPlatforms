@@ -1,7 +1,7 @@
 ﻿
 namespace AdvertisingPlatforms.Base.Constants
 {
-    public class ErrorMessages
+    public static class ErrorMessages
     {
         public const string FILE_IS_REQUIRED = "File validation failed: File is required.";
         public const string ALLOWED_FILE_EXTENSION = "File validation failed: Only .txt files are allowed.";
@@ -15,5 +15,8 @@ namespace AdvertisingPlatforms.Base.Constants
         public const string EMPTY_PLATFORM_NAME = "Platform name cannot be empty.";
         public const string EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM = "Platform must have at least one location.";
         public const string ERROR_PARSING_LINE = "Error when parsing a line {NumberLine}: {Line}.";
+        public const string ENTITY_NOT_FOUND = "Entity not found!";
+        public const string ENTITY_ALREADY_EXISTS = "Entity already exists!";
+        public const string ENTITY_COLLECTION_IS_EMPTY = "Collection of entities is empty.";
     }
 }

@@ -2,10 +2,14 @@
 
 namespace AdvertisingPlatforms.Base.Exceptions
 {
+    [Serializable]
     public class DomainException : Exception
     {
-        public string Type { get; } = ExceptionTypes.VALIDATION_ERROR;
-        public DomainException(string? message, string type) : base(message) 
+        public string Type { get; } = ExceptionTypes.DOMAIN_ERROR;
+
+        public DomainException(string? message) : base(message) { }
+
+        protected DomainException(string? message, string type) : base(message) 
         { 
             Type = type;
         }

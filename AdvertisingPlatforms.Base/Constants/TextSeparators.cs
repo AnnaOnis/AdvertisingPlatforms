@@ -1,6 +1,6 @@
 ﻿namespace AdvertisingPlatforms.Base.Constants
 {
-    public class TextSeparators
+    public static class TextSeparators
     {
         public const char SLASH = '/';
         public const char SEPARATOR_COLON = ':';

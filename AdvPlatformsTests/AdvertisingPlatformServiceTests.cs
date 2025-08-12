@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using AdvertisingPlatforms.Services;
 using Microsoft.Extensions.Logging;
 using Moq;
 

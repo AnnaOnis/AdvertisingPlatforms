@@ -1,7 +1,7 @@
 ﻿
 namespace AdvertisingPlatforms.Domain.Abstractions
 {
-    public interface IFileDataValidator<TData> where TData : IFileData
+    public interface IFileDataValidator<in TData> where TData : IFileData
     {
         void Validate(TData? data);
     }

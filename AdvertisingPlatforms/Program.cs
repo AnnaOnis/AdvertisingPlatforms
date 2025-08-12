@@ -8,7 +8,7 @@ namespace AdvertisingPlatforms
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.ConfigureApplicationServices();
+            builder.Services.ConfigureApplicationServices(builder.Configuration);
 
             var app = builder.Build();
 

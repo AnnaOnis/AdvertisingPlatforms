@@ -1,4 +1,5 @@
 ﻿using AdvertisingPlatforms.DAL.Entities;
+using AdvertisingPlatforms.Domain.DTOs;
 
 namespace AdvertisingPlatforms.Domain.Abstractions
 {
@@ -12,6 +13,6 @@ namespace AdvertisingPlatforms.Domain.Abstractions
         /// </summary>
         /// <param name="stream">Data stream with text information</param>
         /// <returns>List of parsed platforms</returns>
-        IReadOnlyList<AdvertisingPlatform> ParseFile(Stream stream);
+        IReadOnlyList<ParseDataDto> ParseFile(Stream stream);
     }
 }
