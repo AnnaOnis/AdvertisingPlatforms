@@ -63,7 +63,7 @@ build-job:
       - "**/publish/**"
     expire_in: 1 week
   only:
-    - modul_3
+    - develop
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -87,12 +87,12 @@ sonarqube-check-job:
     - dotnet tool install --global dotnet-sonarscanner
     - export PATH="$PATH:$HOME/.dotnet/tools"
   script: 
-      - dotnet sonarscanner begin /k:"squ_539e994534987929c49c69d11d11815204b0003b" /d:sonar.login=$SONAR_TOKEN /d:sonar.host.url=$SONAR_HOST_URL
+      - dotnet sonarscanner begin /k:"AdvertisingPlatformsAnna" /d:sonar.login=$SONAR_TOKEN /d:sonar.host.url=$SONAR_HOST_URL
       - dotnet build --configuration Release
       - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
   allow_failure: true
   only:
-    - modul_3
+    - develop
 
 trivy-scan-job:
   stage: security_scan
@@ -120,7 +120,7 @@ publish-job:
       - ./publish/
     expire_in: 1 week
   only:
-    - modul_3
+    - develop
 
 docker-publish-job:
   stage: docker-publish
@@ -129,7 +129,7 @@ docker-publish-job:
     - docker build -t $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
     - docker push $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
   only:
-    - modul_3
+    - develop
 
 migrate-database-job:
   stage: migrate
@@ -140,7 +140,7 @@ migrate-database-job:
     - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   only:
-    - modul_3
+    - develop
   allow_failure: true
 
 deploy-job:
