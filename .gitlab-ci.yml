@@ -34,17 +34,16 @@ variables:
   BUILD_CONFIGURATION: "Release"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
-  CONNECTION_STRING: "Server=88.218.62.221;Database=delivery4;User Id=user4;Password=P@ssw0rd_4;"
-  DOCKER_REGISTRY: "em-gitlab.ru:5050"
+  DOCKER_REGISTRY: "gitlab.effective-mobile.ru:5050"
   DOCKER_REGISTRY_PASSWORD: "GvnlTfqaYe/zhdu83fLVHXveP2k0jCrIJBCZXK2bm8w="
-  DOCKER_IMAGE: "em-gitlab.ru/em_dotnet_e5/advertisingplatformsanna"
+  DOCKER_IMAGE: "gitlab.effective-mobile.ru/c_project/em_dotnet_e5/advertisingplatformsanna"
   DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
   TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
   NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
 
   USER_PORT: 5004
   SERVER_USER: root
-  SERVER_IP: 88.218.62.221
+  SERVER_IP: 109.172.115.18
   TEST: test
 
 cache:
@@ -127,8 +126,8 @@ docker-publish-job:
   stage: docker-publish
   script:
     - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
-    - docker build -t $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
-    - docker push $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
+    - docker build -t $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
+    - docker push $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
   only:
     - modul_3
 
@@ -159,10 +158,10 @@ deploy-job:
     - ssh-add /root/.ssh/id_rsa
   script:
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
 
 zap-scan-job:
   stage: dast
