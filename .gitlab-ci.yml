@@ -63,7 +63,7 @@ build-job:
       - "**/publish/**"
     expire_in: 1 week
   only:
-    - develop
+    - modul_4
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -92,7 +92,7 @@ sonarqube-check-job:
       - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
   allow_failure: true
   only:
-    - develop
+    - modul_4
 
 trivy-scan-job:
   stage: security_scan
@@ -120,7 +120,7 @@ publish-job:
       - ./publish/
     expire_in: 1 week
   only:
-    - develop
+    - modul_4
 
 docker-publish-job:
   stage: docker-publish
@@ -130,7 +130,7 @@ docker-publish-job:
       - docker build -t $DOCKER_IMAGE .
       - docker push $DOCKER_IMAGE
   only:
-    - develop
+    - modul_4
 
 migrate-database-job:
   stage: migrate
@@ -141,7 +141,7 @@ migrate-database-job:
     - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   only:
-    - develop
+    - modul_4
   allow_failure: true
 
 deploy-job:
