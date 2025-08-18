@@ -5,7 +5,6 @@ using AdvertisingPlatforms.DAL.Delegates;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Constants;
-using System;
 
 namespace AdvertisingPlatforms.Domain.Services
 {

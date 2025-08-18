@@ -3,6 +3,7 @@ using AdvertisingPlatforms.Base.Exceptions;
 using System.Text.Json;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Web.HttpModels.Responses;
+using Confluent.Kafka;
 
 namespace AdvertisingPlatforms.Web.Middlewares
 {
@@ -50,6 +51,10 @@ namespace AdvertisingPlatforms.Web.Middlewares
                 await HandleExceptionAsync(context, exp.GetBaseException(), HttpStatusCode.InternalServerError);
             }
             catch (JsonException exp)
+            {
+                await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
+            }
+            catch (ProduceException<string, string> exp)
             {
                 await HandleExceptionAsync(context, exp, HttpStatusCode.BadRequest);
             }

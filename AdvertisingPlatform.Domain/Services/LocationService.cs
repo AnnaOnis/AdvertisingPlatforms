@@ -4,7 +4,6 @@ using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Models;
 using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Constants;
-using System.IO;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
