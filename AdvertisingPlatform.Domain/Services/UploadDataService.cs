@@ -37,12 +37,10 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             var (validDataItems, validationErrors) = await _fileParser.ParseFile(fileData, cancellationToken);
 
-            var duplicateErrors = new List<UploadErrorDto>();
-
-            await SaveDataToDb(validDataItems, duplicateErrors, cancellationToken);
+            var errors = await SaveDataToDb(validDataItems, cancellationToken);
 
             var allErrors = (validationErrors ?? Enumerable.Empty<UploadErrorDto>())
-                .Concat(duplicateErrors)
+                .Concat(errors)
                 .ToList();
 
             await SaveUploadErrorsToDb(allErrors, uploadSource, cancellationToken);
@@ -54,12 +52,10 @@ namespace AdvertisingPlatforms.Domain.Services
         {
             var (validDataItems, validationErrors) = await _fileParser.ParseStream(stream, contentTypeOrExtension, cancellationToken);
 
-            var duplicateErrors = new List<UploadErrorDto>();
-
-            await SaveDataToDb(validDataItems, duplicateErrors, cancellationToken);
+            var errors = await SaveDataToDb(validDataItems, cancellationToken);
 
             var allErrors = (validationErrors ?? Enumerable.Empty<UploadErrorDto>())
-                .Concat(duplicateErrors)
+                .Concat(errors)
                 .ToList();
 
             await SaveUploadErrorsToDb(allErrors, uploadSource, cancellationToken);
@@ -82,23 +78,26 @@ namespace AdvertisingPlatforms.Domain.Services
             await _uploadErrorRepository.AddRange(errorEntyties, cancellationToken);
         }
 
-        private async Task SaveDataToDb(IReadOnlyList<ParseDataDto>? parseDataItems, 
-            List<UploadErrorDto> duplicateErrors,
+        private async Task<List<UploadErrorDto>> SaveDataToDb(IReadOnlyList<ParseDataDto>? parseDataItems, 
             CancellationToken cancellationToken)
         {
+            var errors = new List<UploadErrorDto>();
+
             if (parseDataItems == null || parseDataItems.Count == 0)
             {
-                duplicateErrors.Add(new UploadErrorDto(
+                errors.Add(new UploadErrorDto(
                     rawData: "",
                     errorType: ExceptionTypes.VALIDATION_ERROR,
                     errorMessage: ErrorMessages.NO_DATA_TO_DOWNLOAD));
 
                 _logger.LogInformation(ErrorMessages.NO_DATA_TO_DOWNLOAD);
-                return;
+                return errors;
             }
-            var locationDictionary = await CreateLocations(parseDataItems, duplicateErrors, cancellationToken);
-            var advertisementDictionary = await CreateAdvertisements(parseDataItems, duplicateErrors, cancellationToken);
-            await CreateAdvettisingPlatform(parseDataItems, locationDictionary, advertisementDictionary, duplicateErrors, cancellationToken);
+            var locationDictionary = await CreateLocations(parseDataItems, errors, cancellationToken);
+            var advertisementDictionary = await CreateAdvertisements(parseDataItems, errors, cancellationToken);
+            await CreateAdvettisingPlatform(parseDataItems, locationDictionary, advertisementDictionary, errors, cancellationToken);
+
+            return errors;
         }
 
         private async Task<Dictionary<string, LocationDb>> CreateLocations(IReadOnlyCollection<ParseDataDto> parseData,

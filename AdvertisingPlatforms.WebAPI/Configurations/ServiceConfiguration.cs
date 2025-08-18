@@ -3,7 +3,6 @@ using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Parser;
 using AdvertisingPlatforms.Domain.Services;
 using AdvertisingPlatforms.DAL.Abstractions;
-using Microsoft.AspNetCore.HttpLogging;
 using AdvertisingPlatforms.DAL.Repositories.InMemory;
 using AdvertisingPlatforms.DAL;
 using AdvertisingPlatforms.DAL.Repositories.DataBase;
@@ -14,8 +13,11 @@ using FluentValidation;
 using AdvertisingPlatforms.Web.Validators;
 using AdvertisingPlatforms.Web.HttpModels.Requests;
 using FluentValidation.AspNetCore;
-using AdvertisingPlatforms.Web.Logging;
 using AdvertisingPlatforms.Domain.Parsers;
+using AdvertisingPlatforms.Kafka.Extensions;
+using AdvertisingPlatforms.Kafka.HostedServices;
+using AdvertisingPlatforms.Kafka.Abstractions;
+using AdvertisingPlatforms.Web.Services;
 
 namespace AdvertisingPlatforms.Web.Configurations
 {
@@ -41,6 +43,10 @@ namespace AdvertisingPlatforms.Web.Configurations
             AddDomainModelFactories(services);
             AddRepositories(services, config);
             services.AddAutoMapper(typeof(Program).Assembly);
+            services.AddKafka(config);
+            services.AddScoped<IBatchKafkaConsumerProcessor, KafkaUploadProcessor>();
+
+            services.AddHostedService<KafkaBatchConsumerHostedService>();
         }
 
         private static void AddFluentValidation(IServiceCollection services)

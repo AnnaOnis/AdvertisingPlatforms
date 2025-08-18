@@ -5,7 +5,6 @@ using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Xml.Linq;
 
 namespace AdvertisingPlatforms.Domain.Parsers
 {
