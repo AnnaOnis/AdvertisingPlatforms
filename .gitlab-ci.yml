@@ -1,22 +1,4 @@
-# This file is a template, and might need editing before it works on your project.
-# This is a sample GitLab CI/CD configuration file that should run without any modifications.
-# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
-# it uses echo commands to simulate the pipeline execution.
-#
-# A pipeline is composed of independent jobs that run scripts, grouped into stages.
-# Stages run in sequential order, but jobs within stages run in parallel.
-#
-# For more information, see: https://docs.gitlab.com/ee/ci/yaml/#stages
-#
-# You can copy and paste this template into a new `.gitlab-ci.yml` file.
-# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
-#
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/development/cicd/templates/
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
-
-stages:          # List of stages for jobs, and their order of execution
+stages:
   - build
   - test
   - sast
@@ -34,16 +16,16 @@ variables:
   BUILD_CONFIGURATION: "Release"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
-  DOCKER_REGISTRY: "gitlab.effective-mobile.ru:5050"
-  DOCKER_REGISTRY_PASSWORD: "GvnlTfqaYe/zhdu83fLVHXveP2k0jCrIJBCZXK2bm8w="
-  DOCKER_IMAGE: "gitlab.effective-mobile.ru/c_project/em_dotnet_e5/advertisingplatformsanna"
+  
+  DOCKER_REGISTRY: nexus.effective-mobile.ru:5000
   DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
+  DOCKER_IMAGE: "$DOCKER_REGISTRY/$CI_PROJECT_NAME:$DOCKER_TAG"
   TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
   NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
 
+  SERVER_USER: devops
+  SERVER_IP: 83.220.169.66
   USER_PORT: 5004
-  SERVER_USER: root
-  SERVER_IP: 109.172.115.18
   TEST: test
 
 cache:
@@ -124,12 +106,14 @@ publish-job:
 
 docker-publish-job:
   stage: docker-publish
+  image: docker:24.0.5
   script:
-    - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
-    - docker build -t $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
-    - docker push $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
+    - docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD
+    - docker build -t $DOCKER_IMAGE .
+    - docker push $DOCKER_IMAGE
   only:
     - modul_4
+
 
 migrate-database-job:
   stage: migrate
@@ -151,17 +135,17 @@ deploy-job:
     - apk add --no-cache openssh-client
     - apk add --no-cache openssh-askpass
     - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
-    - ssh-keygen -p -P "password" -N "" -f /root/.ssh/id_rsa
-    - ssh-add /root/.ssh/id_rsa
+    - ssh-keygen -p -P "password" -N "" -f ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa
   script:
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
 
 zap-scan-job:
   stage: dast
