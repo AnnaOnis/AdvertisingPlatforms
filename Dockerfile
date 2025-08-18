@@ -16,6 +16,8 @@ COPY ["AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj", "Advertisin
 COPY ["AdvertisingPlatform.Domain/AdvertisingPlatforms.Domain.csproj", "AdvertisingPlatform.Domain/"]
 COPY ["AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj", "AdvertisingPlatforms.DAL/"]
 COPY ["AdvertisingPlatforms.Base/AdvertisingPlatforms.Base.csproj", "AdvertisingPlatforms.Base/"]
+COPY ["AdvertisingPlatforms.Kafka/AdvertisingPlatforms.Kafka.csproj", "AdvertisingPlatforms.Kafka/"]
+COPY ["Tools/DataGenerator/DataGenerator/DataGenerator.csproj", "Tools/DataGenerator/DataGenerator/"]
 RUN dotnet restore "./AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj"
 RUN dotnet restore "./Tools/DataGenerator/DataGenerator/DataGenerator.csproj"
 COPY . .
