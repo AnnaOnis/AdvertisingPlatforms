@@ -46,6 +46,7 @@ build-job:
     expire_in: 1 week
   only:
     - modul_4
+  when: manual
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -75,6 +76,7 @@ sonarqube-check-job:
   allow_failure: true
   only:
     - modul_4
+  when: manual
 
 trivy-scan-job:
   stage: security_scan
@@ -91,6 +93,7 @@ trivy-scan-job:
       - trivy-report.json
     expire_in: 1 week
   allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
+  when: manual
 
 publish-job:
   stage: publish
@@ -113,6 +116,7 @@ docker-publish-job:
     - docker push $DOCKER_IMAGE
   only:
     - modul_4
+  when: manual
 
 
 migrate-database-job:
@@ -121,7 +125,7 @@ migrate-database-job:
   script:
     - dotnet tool install --global dotnet-ef || true
     - export PATH="$PATH:$HOME/.dotnet/tools"
-    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebApi/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
+    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   only:
     - modul_4
@@ -146,6 +150,7 @@ deploy-job:
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
+  when: manual
 
 zap-scan-job:
   stage: dast
