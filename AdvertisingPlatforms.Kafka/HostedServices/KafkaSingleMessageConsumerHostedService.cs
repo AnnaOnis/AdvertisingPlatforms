@@ -29,11 +29,14 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
             {
                 BootstrapServers = _settings.BootstrapServers,
                 GroupId = _settings.ConsumerGroupId,
+                SecurityProtocol = _settings.SecurityProtocol,
+                SaslUsername = _settings.SaslUsername,
+                SaslPassword = _settings.SaslPassword,
+                SaslMechanism = _settings.SaslMechanism,
+                AutoOffsetReset = _settings.AutoOffsetReset,
                 EnableAutoCommit = true,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
                 SessionTimeoutMs = 6000,
                 MaxPollIntervalMs = _settings.PollIntervalMs,
-                AllowAutoCreateTopics = _settings.EnableAutoCreateTopics
             };
 
             using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();

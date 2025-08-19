@@ -19,10 +19,13 @@ namespace AdvertisingPlatforms.Kafka.Services
             var config = new ProducerConfig
             {
                 BootstrapServers = _settings.BootstrapServers,
-                SocketKeepaliveEnable = true,
+                ClientId = _settings.ClientId,
+                SecurityProtocol = _settings.SecurityProtocol,
+                SaslUsername = _settings.SaslUsername,
+                SaslPassword = _settings.SaslPassword,
+                SaslMechanism = _settings.SaslMechanism,
                 Acks = Acks.All,
                 EnableIdempotence = true,
-                LingerMs = 5,
                 BatchSize = 64 * 1024,                
             };
             _producer = new ProducerBuilder<string, string>(config).Build();

@@ -29,14 +29,25 @@ RUN dotnet build "./DataGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/build/
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-RUN dotnet publish "./Tools/DataGenerator/DataGenerator/DataGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/publish/DataGenerator /p:UseAppHost=false
+RUN dotnet publish "/src/AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "/src/Tools/DataGenerator/DataGenerator/DataGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/publish/DataGenerator /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=publish /app/publish ./WebAPI
 COPY --from=publish /app/publish/DataGenerator ./DataGenerator
-COPY ./run_all.sh .
-RUN chmod +x ./run_all.sh
-ENTRYPOINT ["./run_all.sh"]
+
+RUN echo '#!/bin/bash\n\
+cd /app/WebAPI && dotnet AdvertisingPlatforms.Web.dll &\n\
+cd /app/DataGenerator && dotnet DataGenerator.dll &\n\
+wait' > /app/start.sh && \
+chmod +x /app/start.sh
+
+ENTRYPOINT ["/app/start.sh"]
+
+
+
+# COPY ./run_all.sh .
+# RUN chmod +x ./run_all.sh
+# ENTRYPOINT ["./run_all.sh"]
