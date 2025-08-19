@@ -37,15 +37,8 @@ namespace AdvertisingPlatforms.Web.Services
             }
             catch
             {
-                try
-                {
-                    await _unitOfWork.RollBack();
-                }
-                catch (Exception ex)
-                {
-                    _logger?.LogError(ex, "Rollback failed in KafkaUploadProcessor");
-                    throw;
-                }
+                await _unitOfWork.RollBack();
+
                 throw;
             }
         }

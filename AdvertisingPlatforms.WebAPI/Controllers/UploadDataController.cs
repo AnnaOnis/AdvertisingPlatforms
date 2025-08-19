@@ -13,7 +13,7 @@ namespace AdvertisingPlatforms.Web.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UploadDataController : Controller
+    public class UploadDataController : ControllerBase
     {
         private readonly IUploadDataService _uploadDataService;
 

@@ -10,7 +10,7 @@ EXPOSE 8081
 
 # Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
+ARG BUILD_CONFIGURATION="Release"
 WORKDIR /src
 COPY ["AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj", "AdvertisingPlatforms.WebAPI/"]
 COPY ["AdvertisingPlatform.Domain/AdvertisingPlatforms.Domain.csproj", "AdvertisingPlatform.Domain/"]
@@ -22,15 +22,15 @@ RUN dotnet restore "./AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.cspro
 RUN dotnet restore "./Tools/DataGenerator/DataGenerator/DataGenerator.csproj"
 COPY . .
 WORKDIR "/src/AdvertisingPlatforms.WebAPI"
-RUN dotnet build "./AdvertisingPlatforms.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./AdvertisingPlatforms.Web.csproj" -c "$BUILD_CONFIGURATION" -o /app/build
 WORKDIR "/src/Tools/DataGenerator/DataGenerator"
-RUN dotnet build "./DataGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/build/DataGenerator
+RUN dotnet build "./DataGenerator.csproj" -c "$BUILD_CONFIGURATION" -o /app/build/DataGenerator
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "/src/AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-RUN dotnet publish "/src/Tools/DataGenerator/DataGenerator/DataGenerator.csproj" -c $BUILD_CONFIGURATION -o /app/publish/DataGenerator /p:UseAppHost=false
+ARG BUILD_CONFIGURATION="Release"
+RUN dotnet publish "/src/AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "/src/Tools/DataGenerator/DataGenerator/DataGenerator.csproj" -c "$BUILD_CONFIGURATION" -o /app/publish/DataGenerator /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final

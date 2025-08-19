@@ -19,15 +19,15 @@ namespace DataGenerator.HostedServices
             _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var timer = new PeriodicTimer(TimeSpan.FromMinutes(ConfigConstants.GENERATION_INTERVAL_MIN));
 
-            while (await timer.WaitForNextTickAsync(cancellationToken))
+            while (await timer.WaitForNextTickAsync(stoppingToken))
             {
                 _logger.LogInformation("Start of planned generation...");
 
-                await _generator.GenerateAndSendToKafkaAsync(cancellationToken);
+                await _generator.GenerateAndSendToKafkaAsync(stoppingToken);
 
                 _logger.LogInformation("Planned generation completed...");
             }

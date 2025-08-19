@@ -18,12 +18,6 @@ namespace AdvertisingPlatforms.Kafka.Models
         public AutoOffsetReset? AutoOffsetReset { get; set; }
         public int PollIntervalMs { get; set; } = 10000;
         public int CommitIntervalMs { get; set; } = 5000;
-        //public int ConsumerConcurrency { get; set; } = 1;
-
-
-        // Настройки для одиночных сообщений
-        //public int MaxProcessingTimeMs { get; set; } = 5000;
-        //public int RetryDelayMs { get; set; } = 1000;
     }
 }
 
