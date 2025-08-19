@@ -121,7 +121,7 @@ migrate-database-job:
   script:
     - dotnet tool install --global dotnet-ef || true
     - export PATH="$PATH:$HOME/.dotnet/tools"
-    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
+    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebApi/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   only:
     - modul_4
