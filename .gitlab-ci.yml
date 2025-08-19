@@ -46,7 +46,6 @@ build-job:
     expire_in: 1 week
   only:
     - modul_4
-  when: manual
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -76,7 +75,6 @@ sonarqube-check-job:
   allow_failure: true
   only:
     - modul_4
-  when: manual
 
 trivy-scan-job:
   stage: security_scan
@@ -93,7 +91,6 @@ trivy-scan-job:
       - trivy-report.json
     expire_in: 1 week
   allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
-  when: manual
 
 publish-job:
   stage: publish
@@ -116,7 +113,6 @@ docker-publish-job:
     - docker push $DOCKER_IMAGE
   only:
     - modul_4
-  when: manual
 
 
 migrate-database-job:
@@ -150,7 +146,6 @@ deploy-job:
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
-  when: manual
 
 zap-scan-job:
   stage: dast
@@ -174,5 +169,4 @@ zap-scan-job:
       - report-$CI_COMMIT_SHORT_SHA.html
       - report-$CI_COMMIT_SHORT_SHA.json
     reports:
-      dast: report-$CI_COMMIT_SHORT_SHA.json
-  when: manual    
+      dast: report-$CI_COMMIT_SHORT_SHA.json    
