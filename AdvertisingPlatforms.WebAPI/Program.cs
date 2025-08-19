@@ -17,7 +17,7 @@ try
 
     app.ConfigureApplicationMiddleware();
 
-    app.Run();
+    await app.RunAsync();
 }
 catch (Exception ex)
 {
@@ -26,5 +26,5 @@ catch (Exception ex)
 finally
 {
     Log.Information(LogMessages.APP_STOP);
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
