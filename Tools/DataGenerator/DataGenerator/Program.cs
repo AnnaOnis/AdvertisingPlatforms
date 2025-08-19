@@ -27,6 +27,6 @@ builder.Services.AddHostedService<ScheduledGenerationService>();
 builder.Services.AddHostedService<KafkaSingleMessageConsumerHostedService>();
 
 // Запуск
-builder.Build().Run();
+await builder.Build().RunAsync();
 
 
