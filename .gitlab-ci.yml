@@ -30,20 +30,20 @@ stages:          # List of stages for jobs, and their order of execution
 variables:
   DOTNET_VERSION: "9.0"
   SOLUTION_FILE: "AdvertisingPlatforms.sln"
-  PROJECT_PATH: "AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj"
+  PROJECT_PATH: "AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj"
   BUILD_CONFIGURATION: "Release"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
-  DOCKER_REGISTRY: "gitlab.effective-mobile.ru:5050"
-  DOCKER_REGISTRY_PASSWORD: "GvnlTfqaYe/zhdu83fLVHXveP2k0jCrIJBCZXK2bm8w="
-  DOCKER_IMAGE: "gitlab.effective-mobile.ru/c_project/em_dotnet_e5/advertisingplatformsanna"
+
+  DOCKER_REGISTRY: nexus.effective-mobile.ru:5000
   DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
+  DOCKER_IMAGE: "$DOCKER_REGISTRY/$CI_PROJECT_NAME:$DOCKER_TAG"
   TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
   NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
 
   USER_PORT: 5004
   SERVER_USER: root
-  SERVER_IP: 109.172.115.18
+  SERVER_IP: 83.220.169.66
   TEST: test
 
 cache:
@@ -125,9 +125,9 @@ publish-job:
 docker-publish-job:
   stage: docker-publish
   script:
-    - docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD
-    - docker build -t $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG .
-    - docker push $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG
+      - docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD
+      - docker build -t $DOCKER_IMAGE .
+      - docker push $DOCKER_IMAGE
   only:
     - develop
 
@@ -137,7 +137,7 @@ migrate-database-job:
   script:
     - dotnet tool install --global dotnet-ef || true
     - export PATH="$PATH:$HOME/.dotnet/tools"
-    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
+    - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   only:
     - develop
@@ -157,11 +157,11 @@ deploy-job:
     - ssh-keygen -p -P "password" -N "" -f /root/.ssh/id_rsa
     - ssh-add /root/.ssh/id_rsa
   script:
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u root -p $DOCKER_REGISTRY_PASSWORD"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
     - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_REGISTRY/c_project/em_dotnet_e5/advertisingplatformsanna:$DOCKER_TAG"
+    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
 
 zap-scan-job:
   stage: dast
