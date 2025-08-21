@@ -124,6 +124,7 @@ publish-job:
 
 docker-publish-job:
   stage: docker-publish
+  image: docker:24.0.5
   script:
       - docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD
       - docker build -t $DOCKER_IMAGE .
