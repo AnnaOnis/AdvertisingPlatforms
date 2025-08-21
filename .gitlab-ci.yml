@@ -42,7 +42,7 @@ variables:
   NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
 
   USER_PORT: 5004
-  SERVER_USER: root
+  SERVER_USER: devops
   SERVER_IP: 83.220.169.66
   TEST: test
 
