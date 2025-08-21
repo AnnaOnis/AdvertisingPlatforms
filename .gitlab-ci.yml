@@ -187,4 +187,4 @@ zap-scan-job:
       - report-$CI_COMMIT_SHORT_SHA.json
     reports:
       dast: report-$CI_COMMIT_SHORT_SHA.json
-      
+  when: manual    
