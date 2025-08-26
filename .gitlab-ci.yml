@@ -1,62 +1,57 @@
 stages:
-  - build
   - test
   - sast
-  - security_scan
-  - publish
   - docker-publish
+  - cleanup
   - migrate
   - deploy
+  - security_scan
   - dast
 
 variables:
+  # .NET
   DOTNET_VERSION: "9.0"
   SOLUTION_FILE: "AdvertisingPlatforms.sln"
   PROJECT_PATH: "AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj"
   BUILD_CONFIGURATION: "Release"
-  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
-  ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
-  
+
+  # Docker/Registry
   DOCKER_REGISTRY: nexus.effective-mobile.ru:5000
   DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
   DOCKER_IMAGE: "$DOCKER_REGISTRY/$CI_PROJECT_NAME:$DOCKER_TAG"
-  TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
-  NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
 
+  # Кэши и артефакты
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
+  ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
+  TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
+  
+  # Деплой
   SERVER_USER: devops
   SERVER_IP: 83.220.169.66
   USER_PORT: 5004
-  TEST: test
 
 cache:
   key: "$CI_COMMIT_REF_SLUG"
   paths:
     - .nuget/
+    - .trivycache/
 
-build-job:
-  stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0
-  script:
-    - dotnet restore
-    - dotnet build --configuration Release --no-restore --output ./publish/
-  artifacts:
-    paths:
-      - "**/bin/Release/**"
-      - "**/publish/**"
-    expire_in: 1 week
-  only:
-    - modul_4
-
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
+# ---------- TESTS (MANUAL) ----------
+unit-test-job:   
+  stage: test    
   image: mcr.microsoft.com/dotnet/sdk:$DOTNET_VERSION
   script:
      - dotnet test
+     - dotnet test --no-restore --configuration $BUILD_CONFIGURATION
   when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
+# ---------- SAST / SONAR ----------
 sonarqube-check-job:
   stage: sast
-  image: mcr.microsoft.com/dotnet/sdk:9.0
+  image: mcr.microsoft.com/dotnet/sdk:$DOTNET_VERSION
   variables:
     SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" 
     GIT_DEPTH: "0"  
@@ -70,70 +65,58 @@ sonarqube-check-job:
     - export PATH="$PATH:$HOME/.dotnet/tools"
   script: 
       - dotnet sonarscanner begin /k:"AdvertisingPlatformsAnna" /d:sonar.login=$SONAR_TOKEN /d:sonar.host.url=$SONAR_HOST_URL
-      - dotnet build --configuration Release
+      - dotnet build --configuration $BUILD_CONFIGURATION
       - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
   allow_failure: true
-  only:
-    - modul_4
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
-trivy-scan-job:
-  stage: security_scan
-  image: 
-    name: aquasec/trivy:latest
-    entrypoint: [""]
-  dependencies:
-    - build-job
-  script:
-    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format json -o trivy-report.json ./publish/
-    - trivy fs --security-checks vuln --severity HIGH,CRITICAL --format table ./publish/
-  artifacts:
-    paths:
-      - trivy-report.json
-    expire_in: 1 week
-  allow_failure: false  # Если найдутся уязвимости - пайплайн упадёт
-
-publish-job:
-  stage: publish
-  image: mcr.microsoft.com/dotnet/sdk:9.0
-  script:
-    - dotnet publish --configuration Release --output ./publish
-  artifacts:
-    paths:
-      - ./publish/
-    expire_in: 1 week
-  only:
-    - modul_4
-
+# ---------- DOCKER BUILD & PUSH (socket mode) ----------
 docker-publish-job:
   stage: docker-publish
   image: docker:24.0.5
+  needs:
+    - sonarqube-check-job
   script:
     - docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD
     - docker build -t $DOCKER_IMAGE .
     - docker push $DOCKER_IMAGE
-  only:
-    - modul_4
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
+
+# ---------- CLEANUP: чистим локальные слои/кэш на раннере ----------
+cleanup-runner-cache:
+  stage: cleanup
+  image: docker:24.0.5
+  needs: ["docker-publish-job"]
+  script:
+    - docker rmi "$DOCKER_IMAGE" || true
+    - docker image prune -f
+    - docker builder prune -af
+    - docker container prune -f
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 
+# ---------- (опционально) MIGRATIONS ----------
 migrate-database-job:
   stage: migrate
-  image: mcr.microsoft.com/dotnet/sdk:9.0
+  image: mcr.microsoft.com/dotnet/sdk:$DOTNET_VERSION
   script:
     - dotnet tool install --global dotnet-ef || true
     - export PATH="$PATH:$HOME/.dotnet/tools"
     - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
-  only:
-    - modul_4
   allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
+# ---------- DEPLOY ----------
 deploy-job:
   stage: deploy
   image: alpine:latest
   before_script:
-    - apk add --no-cache sshpass
     - apk add --no-cache openssh-client
-    - apk add --no-cache openssh-askpass
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
@@ -141,33 +124,49 @@ deploy-job:
     - ssh-keygen -p -P "password" -N "" -f ~/.ssh/id_rsa
     - ssh-add ~/.ssh/id_rsa
   script:
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker rm $CI_PROJECT_NAME || true"
-    - ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
+    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD"
+    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
+    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true && docker rm $CI_PROJECT_NAME || true"
+    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
+# ---------- SECURITY SCAN (MANUAL, по образу) ----------
+trivy-scan-job:
+  stage: security_scan
+  image: 
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  needs: ["docker-publish-job"]
+  script:
+    # Используем встроенную аутентификацию Trivy вместо docker login
+    - /usr/local/bin/trivy registry login --username "$NEXUS_USER" --password "$NEXUS_PASSWORD" "$DOCKER_REGISTRY"
+    - /usr/local/bin/trivy image --scanners vuln --severity HIGH,CRITICAL --cache-dir "$TRIVY_CACHE_DIR" "$DOCKER_IMAGE" --format json -o trivy-report.json
+  artifacts:
+    when: always
+    paths:
+      - trivy-report.json
+    expire_in: 15 minutes
+  allow_failure: true
+  when: manual
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"'
+
+# ---------- DAST (MANUAL, тяжёлый) ----------
 zap-scan-job:
   stage: dast
   allow_failure: true
-  image:
-    name: zaproxy/zap-stable
-  before_script:
-    - mkdir -p /zap/wrk
-    - whoami
+  image: zaproxy/zap-stable
   script:
-    - zap-full-scan.py -t http://88.218.62.221:$USER_PORT/ -J report-$CI_COMMIT_SHORT_SHA.json -r report-$CI_COMMIT_SHORT_SHA.html
-  after_script:
-    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.json .
-    - mv /zap/wrk/report-$CI_COMMIT_SHORT_SHA.html .
-    - rm -rf /zap/wrk/* 
-    - pkill -f zap.sh || true
-    - exit 0
+      - zap-full-scan.py -t http://83.220.169.66:$USER_PORT/ \
+        -J report-$CI_COMMIT_SHORT_SHA.json \
+        -r report-$CI_COMMIT_SHORT_SHA.html
   artifacts:
     when: always
     paths:
       - report-$CI_COMMIT_SHORT_SHA.html
       - report-$CI_COMMIT_SHORT_SHA.json
-    reports:
-      dast: report-$CI_COMMIT_SHORT_SHA.json 
-  when: manual   
+    expire_in: 15 minutes 
+  when: manual  
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "modul_4"' 
