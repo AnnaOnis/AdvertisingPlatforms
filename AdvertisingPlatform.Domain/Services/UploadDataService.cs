@@ -1,10 +1,12 @@
-﻿using AdvertisingPlatforms.Base.Extensions;
-using AdvertisingPlatforms.Base.Constants;
+﻿using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.DAL.Entities;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
+using AdvertisingPlatforms.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -35,11 +37,11 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UploadDataFromFile(IFileData fileData, string uploadSource, CancellationToken cancellationToken)
         {
-            var (validDataItems, validationErrors) = await _fileParser.ParseFile(fileData, cancellationToken);
+            var parsingResult = await _fileParser.ParseFile(fileData, cancellationToken);
 
-            var errors = await SaveDataToDb(validDataItems, cancellationToken);
+            var errors = await SaveDataToDb(parsingResult.ValidData, cancellationToken);
 
-            var allErrors = (validationErrors ?? Enumerable.Empty<UploadErrorDto>())
+            var allErrors = (parsingResult.Errors ?? Enumerable.Empty<ErrorDataDto>())
                 .Concat(errors)
                 .ToList();
 
@@ -50,20 +52,30 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UploadDataFromStream(Stream stream, string contentTypeOrExtension, string uploadSource, CancellationToken cancellationToken)
         {
-            var (validDataItems, validationErrors) = await _fileParser.ParseStream(stream, contentTypeOrExtension, cancellationToken);
+            var parsingResult = await _fileParser.ParseStream(stream, contentTypeOrExtension, cancellationToken);
 
-            var errors = await SaveDataToDb(validDataItems, cancellationToken);
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                var errors = await SaveDataToDb(parsingResult.ValidData, cancellationToken);
 
-            var allErrors = (validationErrors ?? Enumerable.Empty<UploadErrorDto>())
-                .Concat(errors)
-                .ToList();
+                var allErrors = (parsingResult.Errors ?? Enumerable.Empty<ErrorDataDto>())
+                    .Concat(errors)
+                    .ToList();
 
-            await SaveUploadErrorsToDb(allErrors, uploadSource, cancellationToken);
+                await SaveUploadErrorsToDb(allErrors, uploadSource, cancellationToken);
 
-            _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
+                _logger.LogInformation(LogMessages.DATA_UPLOADED_SUCCESSFULLY);
+            }
+            finally
+            {
+                stopwatch.Stop();
+                _logger.LogInformation($"Сохранение данных в бд выполнено за {stopwatch.ElapsedMilliseconds} мс");
+            }
+
         }
 
-        private async Task SaveUploadErrorsToDb(IReadOnlyList<UploadErrorDto>? errorDtos, string uploadSource, CancellationToken cancellationToken)
+        private async Task SaveUploadErrorsToDb(IReadOnlyList<ErrorDataDto>? errorDtos, string uploadSource, CancellationToken cancellationToken)
         {
             if (errorDtos == null || errorDtos.Count == 0)
             {
@@ -72,36 +84,36 @@ namespace AdvertisingPlatforms.Domain.Services
             var errorEntyties = errorDtos.Select(e =>
                 new UploadErrorDb(uploadSource, 
                 e.RawData, 
-                e.ErrorType, 
+                e.Type.ToString(), 
                 e.ErrorMessage)).ToList();
 
-            await _uploadErrorRepository.AddRange(errorEntyties, cancellationToken);
+            await _uploadErrorRepository.BulkInsert(errorEntyties, cancellationToken);
         }
 
-        private async Task<List<UploadErrorDto>> SaveDataToDb(IReadOnlyList<ParseDataDto>? parseDataItems, 
+        private async Task<List<ErrorDataDto>> SaveDataToDb(IReadOnlyList<ValidDataDto>? parseDataItems, 
             CancellationToken cancellationToken)
         {
-            var errors = new List<UploadErrorDto>();
+            var errors = new List<ErrorDataDto>();
 
             if (parseDataItems == null || parseDataItems.Count == 0)
             {
-                errors.Add(new UploadErrorDto(
+                errors.Add(new ErrorDataDto(
                     rawData: "",
-                    errorType: ExceptionTypes.VALIDATION_ERROR,
-                    errorMessage: ErrorMessages.NO_DATA_TO_DOWNLOAD));
+                    errorType: ErrorType.EmptyData,
+                    errorMessage: ErrorMessages.EMPTY_DATA));
 
-                _logger.LogInformation(ErrorMessages.NO_DATA_TO_DOWNLOAD);
+                _logger.LogInformation(ErrorMessages.EMPTY_DATA);
                 return errors;
             }
             var locationDictionary = await CreateLocations(parseDataItems, errors, cancellationToken);
             var advertisementDictionary = await CreateAdvertisements(parseDataItems, errors, cancellationToken);
-            await CreateAdvettisingPlatform(parseDataItems, locationDictionary, advertisementDictionary, errors, cancellationToken);
+            await CreateAdvettisingPlatforms(parseDataItems, locationDictionary, advertisementDictionary, errors, cancellationToken);
 
             return errors;
         }
 
-        private async Task<Dictionary<string, LocationDb>> CreateLocations(IReadOnlyCollection<ParseDataDto> parseData,
-            List<UploadErrorDto> duplicateErrors,
+        private async Task<Dictionary<string, LocationDb>> CreateLocations(IReadOnlyCollection<ValidDataDto> parseData,
+            List<ErrorDataDto> duplicateErrors,
             CancellationToken cancellationToken)
         {
             var locationDictionary = new Dictionary<string, LocationDb>();
@@ -116,29 +128,32 @@ namespace AdvertisingPlatforms.Domain.Services
 
             var sortedPaths = allPaths.OrderBy(p => p.Split(TextSeparators.SLASH).Length).ToList();
 
+            var existingLocations = await _locationRepository.GetAll(cancellationToken);
+            var existingPaths = existingLocations.ToDictionary(location => location.Path);
+
             foreach (var path in sortedPaths)
             {
                 if (locationDictionary.ContainsKey(path)) continue;
 
-                var existingLocation = await _locationRepository.FindByPath(path, cancellationToken);
-                if (existingLocation != null)
+                if (existingPaths.ContainsKey(path))
                 {
+                    var existingLocation = existingPaths[path];
                     locationDictionary.Add(path, existingLocation);
-                    _logger.LogInformation(LogMessages.LOCATION_ALREADY_EXISTS, path);
-                    duplicateErrors.Add(new UploadErrorDto( 
+                    //_logger.LogInformation(LogMessages.LOCATION_ALREADY_EXISTS, path);
+                    duplicateErrors.Add(new ErrorDataDto( 
                         rawData: path,
-                        errorType: ExceptionTypes.DUPLICATE_ERROR,
+                        errorType: ErrorType.DuplicateError,
                         errorMessage: $"{ErrorMessages.ENTITY_ALREADY_EXISTS}: {path}"));
                     skippedCount++;
                     continue;
                 }
 
-                var parent = await FindParentLocation(path, locationDictionary, newLocations, duplicateErrors, cancellationToken);
+                var parent = await FindParentLocation(path, locationDictionary, newLocations, existingPaths, duplicateErrors, cancellationToken);
                 var location = new LocationDb(path, parent?.Id);
 
                 locationDictionary.Add(path, location);
                 newLocations.Add(location);
-                _logger.LogInformation(LogMessages.LOCATION_CREATED, path);
+                //_logger.LogInformation(LogMessages.LOCATION_CREATED, path);
                 addedCount++;
             }
 
@@ -153,16 +168,18 @@ namespace AdvertisingPlatforms.Domain.Services
 
             if (newLocations.Count > 0)
             {
-                await _locationRepository.AddRange(newLocations, cancellationToken);
+                await _locationRepository.BulkInsert(newLocations, cancellationToken);
             }
 
             _logger.LogInformation(LogMessages.LOCATIONS_UPLOAD_SUMMARY, addedCount, skippedCount);
             return locationDictionary;
         }
 
-        private async Task<LocationDb?> FindParentLocation(string path, Dictionary<string, LocationDb> locations, 
+        private async Task<LocationDb?> FindParentLocation(string path, 
+            Dictionary<string, LocationDb> locations, 
             List<LocationDb> newLocations,
-            List<UploadErrorDto> duplicateErrors,
+            Dictionary<string, LocationDb> existingPaths,
+            List<ErrorDataDto> duplicateErrors,
             CancellationToken cancellationToken)
         {
             var segments = path.Split(TextSeparators.SLASH, StringSplitOptions.RemoveEmptyEntries);
@@ -174,33 +191,33 @@ namespace AdvertisingPlatforms.Domain.Services
             if (locations.TryGetValue(parentPath, out var parent))
                 return parent;
 
-            var existingParent = await _locationRepository.FindByPath(parentPath, cancellationToken);
-            if (existingParent != null)
+            if (existingPaths.ContainsKey(parentPath))
             {
+                var existingParent = existingPaths[parentPath];
                 locations.Add(parentPath, existingParent);
-                _logger.LogInformation(LogMessages.LOCATION_ALREADY_EXISTS, parentPath);
-                duplicateErrors.Add(new UploadErrorDto(
+                //_logger.LogInformation(LogMessages.LOCATION_ALREADY_EXISTS, parentPath);
+                duplicateErrors.Add(new ErrorDataDto(
                     rawData: parentPath,
-                    errorType: ExceptionTypes.DUPLICATE_ERROR,
+                    errorType: ErrorType.DuplicateError,
                     errorMessage: $"{ErrorMessages.ENTITY_ALREADY_EXISTS}: {parentPath}"));
                 return existingParent;
             }
 
-            var newParent = await FindParentLocation(parentPath, locations, newLocations, duplicateErrors, cancellationToken);
+            var newParent = await FindParentLocation(parentPath, locations, newLocations, existingPaths, duplicateErrors, cancellationToken);
             
             if (newParent == null)
             {
                 newParent = new LocationDb(parentPath, null);
                 locations.Add(parentPath, newParent);
                 newLocations.Add(newParent);
-                _logger.LogInformation(LogMessages.LOCATION_CREATED, parentPath);
+                //_logger.LogInformation(LogMessages.LOCATION_CREATED, parentPath);
             }
 
             return newParent;
         }
 
-        private async Task<Dictionary<string, AdvertisementDb>> CreateAdvertisements(IReadOnlyCollection<ParseDataDto> parseData,
-            List<UploadErrorDto> duplicateErrors,
+        private async Task<Dictionary<string, AdvertisementDb>> CreateAdvertisements(IReadOnlyCollection<ValidDataDto> parseData,
+            List<ErrorDataDto> duplicateErrors,
             CancellationToken cancellationToken)
         {
             var advertisementDictionary = new Dictionary<string, AdvertisementDb>();
@@ -209,16 +226,19 @@ namespace AdvertisingPlatforms.Domain.Services
             var addedCount = 0;
             var skippedCount = 0;
 
+            var existingAdvertisements = await _advertisementRepository.GetAll(cancellationToken);
+            var existingNames = existingAdvertisements.ToDictionary(advertisement => advertisement.Name);
+
             foreach (var name in uniqueNames)
             {
-                var existingAdvertisement = await _advertisementRepository.FindByName(name, cancellationToken);
-                if (existingAdvertisement != null)
+                if (existingNames.ContainsKey(name))
                 {
+                    var existingAdvertisement = existingNames[name];
                     advertisementDictionary.Add(name, existingAdvertisement);
-                    _logger.LogInformation(LogMessages.ADVERTISEMENT_ALREADY_EXISTS, name);
-                    duplicateErrors.Add(new UploadErrorDto(
+                   // _logger.LogInformation(LogMessages.ADVERTISEMENT_ALREADY_EXISTS, name);
+                    duplicateErrors.Add(new ErrorDataDto(
                         rawData: name,
-                        errorType: ExceptionTypes.DUPLICATE_ERROR,
+                        errorType: ErrorType.DuplicateError,
                         errorMessage: $"{ErrorMessages.ENTITY_ALREADY_EXISTS}: {name}"));
                     skippedCount++;
                     continue;
@@ -227,28 +247,34 @@ namespace AdvertisingPlatforms.Domain.Services
                 var advertisement = new AdvertisementDb(name);
                 advertisementDictionary.Add(advertisement.Name, advertisement);
                 newAdvertisements.Add(advertisement);
-                _logger.LogInformation(LogMessages.ADVERTISEMENT_CREATED, name);
+                //_logger.LogInformation(LogMessages.ADVERTISEMENT_CREATED, name);
                 addedCount++;
             }
 
             if (newAdvertisements.Count > 0)
             {
-                await _advertisementRepository.AddRange(newAdvertisements, cancellationToken);
+                await _advertisementRepository.BulkInsert(newAdvertisements, cancellationToken);
             }
 
             _logger.LogInformation(LogMessages.ADVERTISEMENTS_UPLOAD_SUMMARY, addedCount, skippedCount);
             return advertisementDictionary;
         }
 
-        private async Task CreateAdvettisingPlatform(IReadOnlyCollection<ParseDataDto> parseData, 
+        private async Task CreateAdvettisingPlatforms(IReadOnlyCollection<ValidDataDto> parseData, 
             Dictionary<string, LocationDb> locations,
             Dictionary<string, AdvertisementDb> advertisements,
-            List<UploadErrorDto> duplicateErrors,
+            List<ErrorDataDto> duplicateErrors,
             CancellationToken cancellationToken)
         {
             var newPlatforms = new List<AdvertisingPlatformDb>();
             var skippedCount = 0;
             var addedCount = 0;
+
+            var existingPlatforms = await _advertisingPlatformRepository.GetAll(cancellationToken);
+
+            var existingPlatformKeys = existingPlatforms
+                .Select(p => (p.AdvertisementId, p.LocationId))
+                .ToHashSet();
 
             foreach (var dto in parseData)
             {
@@ -266,16 +292,15 @@ namespace AdvertisingPlatforms.Domain.Services
                         throw new InvalidOperationException($"Advertisement '{dto.AdvertisementName}' not found");
                     }
 
-                    var exists = await _advertisingPlatformRepository.ExistsByAdvertisementAndLocation(
-                        advertisement.Id, location.Id, cancellationToken);
+                    var platformKey = (advertisement.Id, location.Id);
 
-                    if (exists)
+                    if (existingPlatformKeys.Contains(platformKey))
                     {
-                        _logger.LogInformation(LogMessages.PLATFORM_ALREADY_EXISTS, 
-                            dto.AdvertisementName, normalizedPath);
-                        duplicateErrors.Add(new UploadErrorDto(
+                        //_logger.LogInformation(LogMessages.PLATFORM_ALREADY_EXISTS, 
+                            //dto.AdvertisementName, normalizedPath);
+                        duplicateErrors.Add(new ErrorDataDto(
                             rawData: $"{dto.AdvertisementName} | {normalizedPath}",
-                            errorType: ExceptionTypes.DUPLICATE_ERROR,
+                            errorType: ErrorType.DuplicateError,
                             errorMessage: $"{ErrorMessages.ENTITY_ALREADY_EXISTS}: {dto.AdvertisementName} | {normalizedPath}"));
                         skippedCount++;
                         continue;
@@ -288,14 +313,14 @@ namespace AdvertisingPlatforms.Domain.Services
                     };
 
                     newPlatforms.Add(platform);
-                    _logger.LogInformation(LogMessages.PLATFORM_CREATED, 
-                        dto.AdvertisementName, normalizedPath);
+                    //_logger.LogInformation(LogMessages.PLATFORM_CREATED, 
+                     //   dto.AdvertisementName, normalizedPath);
                     addedCount++;
                 }
             }
             if (newPlatforms.Count > 0)
             {
-                await _advertisingPlatformRepository.AddRange(newPlatforms, cancellationToken);
+                await _advertisingPlatformRepository.BulkInsert(newPlatforms, cancellationToken);
             }
 
             _logger.LogInformation(LogMessages.PLATFORMS_UPLOAD_SUMMARY, addedCount, skippedCount);

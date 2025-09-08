@@ -1,7 +1,6 @@
 ﻿using AdvertisingPlatforms.DAL.Abstractions;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
-using AdvertisingPlatforms.Base.Exceptions;
-using AdvertisingPlatforms.Base.Constants;
 
 namespace AdvertisingPlatforms.DAL.Repositories.DataBase
 {
@@ -34,6 +33,11 @@ namespace AdvertisingPlatforms.DAL.Repositories.DataBase
         public virtual async Task AddRange(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
         {
             await Entities.AddRangeAsync(entities, cancellationToken);
+        }
+
+        public virtual async Task BulkInsert(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
+        {
+            await _dbContext.BulkInsertAsync(entities, cancellationToken: cancellationToken);
         }
 
         public virtual async Task Delete(Guid id, CancellationToken cancellationToken)

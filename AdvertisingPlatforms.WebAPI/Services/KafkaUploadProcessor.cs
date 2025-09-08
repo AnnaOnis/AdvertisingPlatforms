@@ -1,9 +1,11 @@
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Abstractions;
+using AdvertisingPlatforms.Domain.DTOs;
 using AdvertisingPlatforms.Kafka.Abstractions;
 using AdvertisingPlatforms.Kafka.Models;
 using Confluent.Kafka;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -24,23 +26,36 @@ namespace AdvertisingPlatforms.Web.Services
 
         public async Task ProcessBatchAsync(IEnumerable<ConsumeResult<string, string>> batch, CancellationToken cancellationToken)
         {
-            var payloads = batch.Select(b => b.Message.Value).ToList();
-            var aggregated = "[" + string.Join(',', payloads) + "]";
+            _logger.LogInformation("Start process data from Kafka..." + DateTime.Now + $" Upload {batch.Count()} ");
 
-            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(aggregated));
-
+            var stopwatch = Stopwatch.StartNew();
             try
             {
-                await _uploadDataService.UploadDataFromStream(stream, ".json", UploadDataSources.KAFKA, cancellationToken);
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.Commit();
-            }
-            catch
-            {
-                await _unitOfWork.RollBack();
+                var payloads = batch.Select(b => b.Message.Value).ToList();
+                var aggregated = "[" + string.Join(',', payloads) + "]";
 
-                throw;
+                await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(aggregated));
+
+                try
+                {
+                    _logger.LogInformation("Start upload data from Kafka..." + DateTime.Now);
+                    await _uploadDataService.UploadDataFromStream(stream, ".json", UploadDataSources.KAFKA, cancellationToken);
+                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.Commit();
+                    _logger.LogInformation("Upload data from Kafka compleeted..." + DateTime.Now);
+                }
+                catch
+                {
+                    await _unitOfWork.RollBack();
+
+                    throw;
+                }                
             }
+            finally
+            {
+                stopwatch.Stop();
+                _logger.LogInformation($"Обработка батча выполнена за {stopwatch.ElapsedMilliseconds} мс");
+            }           
         }
     }
 }

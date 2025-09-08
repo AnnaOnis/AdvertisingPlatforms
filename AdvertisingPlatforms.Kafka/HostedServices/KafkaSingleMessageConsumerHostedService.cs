@@ -34,9 +34,7 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
                 SaslPassword = _settings.SaslPassword,
                 SaslMechanism = _settings.SaslMechanism,
                 AutoOffsetReset = _settings.AutoOffsetReset,
-                EnableAutoCommit = true,
-                SessionTimeoutMs = 6000,
-                MaxPollIntervalMs = _settings.PollIntervalMs,
+                EnableAutoCommit = true
             };
 
             using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
@@ -49,17 +47,18 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
                     try
                     {
                         var consumeResult = await Task.Run(() =>
-                         consumer.Consume(TimeSpan.FromMilliseconds(_settings.PollIntervalMs)),
+                         consumer.Consume(TimeSpan.FromMilliseconds(100)),
                          stoppingToken);
 
-                        if (consumeResult == null) continue;
-
-                        await _processor.ProcessSingleMessageAsync(consumeResult, stoppingToken);
+                        if (consumeResult != null)
+                        {
+                            await _processor.ProcessSingleMessageAsync(consumeResult, stoppingToken);
+                        }
                     }
                     catch (ConsumeException ex)
                     {
                         _logger.LogError(ex, "Kafka consume error: {Reason}", ex.Error.Reason);
-                        await Task.Delay(1000, stoppingToken);
+                        await Task.Delay(3000, stoppingToken);
                     }
                     catch (OperationCanceledException)
                     {

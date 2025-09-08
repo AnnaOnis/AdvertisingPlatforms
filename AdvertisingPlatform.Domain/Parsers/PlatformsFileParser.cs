@@ -14,7 +14,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             _strategies = strategies;
         }
 
-        public async Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> ParseFile(IFileData fileData, CancellationToken cancellationToken)
+        public async Task<ParsingResult> ParseFile(IFileData fileData, CancellationToken cancellationToken)
         {
             var strategy = _strategies.FirstOrDefault(s => s.CanParse(fileData));
             if (strategy == null)
@@ -22,7 +22,7 @@ namespace AdvertisingPlatforms.Domain.Parser
             return await strategy.Parse(fileData, cancellationToken);
         }
 
-        public async Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> ParseStream(Stream stream, string contentTypeOrExtension, CancellationToken cancellationToken)
+        public async Task<ParsingResult> ParseStream(Stream stream, string contentTypeOrExtension, CancellationToken cancellationToken)
         {
             var strategy = _strategies.FirstOrDefault(s => s.CanParse(contentTypeOrExtension));
             if (strategy == null)

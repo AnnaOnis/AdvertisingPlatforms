@@ -19,6 +19,7 @@ namespace AdvertisingPlatforms.Base.Constants
         public const string ENTITY_NOT_FOUND = "Entity not found!";
         public const string ENTITY_ALREADY_EXISTS = "Entity already exists!";
         public const string ENTITY_COLLECTION_IS_EMPTY = "Collection of entities is empty.";
-        public const string NO_DATA_TO_DOWNLOAD = "There is no data to download. The parser returned an empty collection.";
+        public const string EMPTY_DATA = "There is no data to download.";
+        public const string INVALID_DATA_FORMAT = "Invalid data format.";
     }
 }

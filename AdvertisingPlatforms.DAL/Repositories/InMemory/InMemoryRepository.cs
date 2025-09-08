@@ -25,7 +25,14 @@ namespace AdvertisingPlatforms.DAL.Repositories.InMemory
             {
                 await Add(item, cancellationToken);
             }
+        }
 
+        public virtual async Task BulkInsert(IReadOnlyList<TEntity> entities, CancellationToken cancellationToken)
+        {
+            foreach (var item in entities)
+            {
+                await Add(item, cancellationToken);
+            }
         }
 
         public virtual Task Delete(Guid id, CancellationToken cancellationToken)

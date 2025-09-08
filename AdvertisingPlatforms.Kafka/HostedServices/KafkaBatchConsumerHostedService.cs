@@ -34,9 +34,7 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
                 SaslPassword = _settings.SaslPassword,
                 SaslMechanism = _settings.SaslMechanism,
                 AutoOffsetReset = _settings.AutoOffsetReset,
-                EnableAutoCommit = false,
-                SessionTimeoutMs = 6000,
-                MaxPollIntervalMs = _settings.PollIntervalMs,
+                EnableAutoCommit = false
             };
 
             using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
@@ -45,24 +43,25 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
             try
             {
                 var batch = new List<ConsumeResult<string, string>>(_settings.MaxBatchSize);
-                var lastCommit = DateTime.UtcNow;
+                var lastCommitTime = DateTime.UtcNow;
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     try
                     {
                         var cr = await Task.Run(() =>
-                            consumer.Consume(TimeSpan.FromMilliseconds(_settings.PollIntervalMs)),
+                            consumer.Consume(TimeSpan.FromMilliseconds(100)),
                             stoppingToken);
 
-                        if (cr == null) continue;
-
-                        batch.Add(cr);
-
-                        if (ShouldFlush(batch) || IsCommitIntervalExceeded(lastCommit))
+                        if (cr != null)
+                        {
+                            batch.Add(cr);
+                        }
+                        
+                        if (ShouldFlush(batch) || IsCommitIntervalExceeded(lastCommitTime))
                         {
                             await FlushAndCommitAsync(consumer, batch, stoppingToken);
-                            lastCommit = DateTime.UtcNow;
+                            lastCommitTime = DateTime.UtcNow;
                         }
                     }
                     catch (ConsumeException ex)
@@ -87,8 +86,11 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
             => batch.Count >= _settings.MaxBatchSize ||
                batch.Sum(x => (x.Message?.Key?.Length ?? 0) + (x.Message?.Value?.Length ?? 0)) >= _settings.MaxBatchBytes;
 
-        private bool IsCommitIntervalExceeded(DateTime lastCommit)
-            => (DateTime.UtcNow - lastCommit).TotalMilliseconds > _settings.CommitIntervalMs;
+        private bool IsCommitIntervalExceeded(DateTime lastCommitTime)
+            => (DateTime.UtcNow - lastCommitTime).TotalMilliseconds > _settings.CommitIntervalMs;
+
+        private bool IsLastMessageIntervalExceeded(DateTime lastMessageTime)
+             => (DateTime.UtcNow - lastMessageTime).TotalMilliseconds > _settings.CommitIntervalMs;
 
         private async Task FlushAndCommitAsync(IConsumer<string, string> consumer, List<ConsumeResult<string, string>> batch, CancellationToken token)
         {

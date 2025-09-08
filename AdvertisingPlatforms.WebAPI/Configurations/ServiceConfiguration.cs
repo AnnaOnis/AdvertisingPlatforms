@@ -88,8 +88,11 @@ namespace AdvertisingPlatforms.Web.Configurations
 
             if (useDatabase)
             {
+                var connectionString = config.GetConnectionString("DefaultConnection") 
+                    ?? Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
                 services.AddDbContext<AdvertisingPlatformsDbContext>(options =>
-                    options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+                    options.UseNpgsql(connectionString));
 
                 services.AddScoped<IAdvertisingPlatformRepository, EFAdvertisingPlatformRepository>();
                 services.AddScoped<IAdvertisementRepository, EFAdvertisementRepository>();

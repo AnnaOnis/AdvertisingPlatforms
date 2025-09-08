@@ -1,7 +1,9 @@
 using AdvertisingPlatforms.Kafka.Abstractions;
 using AdvertisingPlatforms.Kafka.Models;
+using AdvertisingPlatforms.Web.HttpModels.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace AdvertisingPlatforms.Web.Controllers
 {
@@ -23,15 +25,15 @@ namespace AdvertisingPlatforms.Web.Controllers
             _logger = logger;
         }
 
-        [HttpPost("trigger")]
-        public async Task<IActionResult> TriggerGeneration(CancellationToken ct)
+        [HttpPost]
+        public async Task<IActionResult> TriggerGeneration(int countData, CancellationToken cancellationToken)
         {
-            
+
             await _producer.ProduceAsync(
                 topic: _settings.ComandTopic,
                 key: "manual-trigger",
-                value: DateTime.UtcNow.ToString("O"),
-                cancellationToken: ct
+                value: countData.ToString(),
+                cancellationToken: cancellationToken
             );
 
             _logger.LogInformation("Generation trigger sended...");

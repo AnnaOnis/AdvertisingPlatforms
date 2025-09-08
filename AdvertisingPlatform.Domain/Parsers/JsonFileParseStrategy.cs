@@ -3,7 +3,9 @@ using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Extensions;
 using AdvertisingPlatforms.Domain.Abstractions;
 using AdvertisingPlatforms.Domain.DTOs;
+using AdvertisingPlatforms.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace AdvertisingPlatforms.Domain.Parsers
@@ -36,70 +38,87 @@ namespace AdvertisingPlatforms.Domain.Parsers
                    contentTypeOrExtension.Equals(".json", StringComparison.OrdinalIgnoreCase);
         }
 
-        public async Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> Parse(IFileData fileData, CancellationToken cancellationToken)
+        public async Task<ParsingResult> Parse(IFileData fileData, CancellationToken cancellationToken)
         {
             using var stream = await fileData.FileToMemoryStreamAsync(cancellationToken);
             return await Parse(stream, cancellationToken);
         }
 
-        public async Task<(List<ParseDataDto> Valid, List<UploadErrorDto> Errors)> Parse(Stream stream, CancellationToken cancellationToken)
+        public async Task<ParsingResult> Parse(Stream stream, CancellationToken cancellationToken)
         {
-            var valid = new List<ParseDataDto>();
-            var errors = new List<UploadErrorDto>();
+            var stopwatch = Stopwatch.StartNew();
 
-            var parsedData = await JsonSerializer.DeserializeAsync<List<ParseDataDto>>(stream, _options, cancellationToken);
+            var result = new ParsingResult();
 
-            if (parsedData == null)
+            try
             {
-                errors.Add(new UploadErrorDto(
-                    "",
-                    ExceptionTypes.VALIDATION_ERROR,
-                    "JSON-файл пуст или невалиден."));
-                return (valid, errors);
-            }
+                var parsedData = await JsonSerializer.DeserializeAsync<List<ValidDataDto>>(stream, _options, cancellationToken);
 
-            if (parsedData.Count == 0)
-            {
-                _logger.LogWarning("JSON-файл корректен, но не содержит данных.");
-                return (valid, errors);
-            }
-
-            foreach (var item in parsedData)
-            {
-                try
+                if (parsedData == null)
                 {
-                    if (item == null)
-                        throw new DomainValidationException(ErrorMessages.ENTITY_CAN_NOT_BE_NULL);
-
-                    item.AdvertisementName.NormalizeAdvertisementName();
-                    item.AdvertisementName.ValidatePlatformName();
-
-                    if (item.LocationPaths == null || !item.LocationPaths.Any())
-                        throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
-
-                    item.LocationPaths = item.LocationPaths
-                        .Select(path =>
-                        {
-                            path.NormalizeLocationPath();
-                            path.ValidateLocation();
-                            return path;
-                        })
-                        .ToList();
-
-                    valid.Add(item);
-                }
-                catch (DomainValidationException ex)
-                {
-                    string raw = item != null ? JsonSerializer.Serialize(item) : "null";
-                    errors.Add(new UploadErrorDto(
-                            raw,
-                            ExceptionTypes.VALIDATION_ERROR,
-                            ex.Message));
+                    result.Errors.Add(new ErrorDataDto(
+                        string.Empty,
+                        ErrorType.InvalidFormat,
+                        ErrorMessages.INVALID_DATA_FORMAT));
+                    return result;
                 }
 
-            }
+                if (parsedData.Count == 0)
+                {
+                    _logger.LogWarning(ErrorMessages.EMPTY_DATA);
+                    result.Errors.Add(new ErrorDataDto(
+                        string.Empty,
+                        ErrorType.EmptyData,
+                        ErrorMessages.EMPTY_DATA));
+                    return result;
+                }
 
-            return (valid, errors);
+                foreach (var item in parsedData)
+                {
+                    try
+                    {
+                        result.ValidData.Add(ValidateAndNormalizeParsedDataDto(item));
+                    }
+                    catch (DomainValidationException ex)
+                    {
+                        string raw = item != null ? JsonSerializer.Serialize(item) : "null";
+                        result.Errors.Add(new ErrorDataDto(
+                                raw,
+                                ErrorType.ValidationError,
+                                ex.Message));
+                    }
+                }               
+            }
+            finally
+            {
+                stopwatch.Stop();
+                result.ElapsedTime = stopwatch.Elapsed;
+                _logger.LogInformation($"Парсинг выполнен за {stopwatch.ElapsedMilliseconds} мс");               
+            }
+           return result;
+        }
+
+        private ValidDataDto ValidateAndNormalizeParsedDataDto(ValidDataDto item)
+        {
+            if (item == null)
+                throw new DomainValidationException(ErrorMessages.ENTITY_CAN_NOT_BE_NULL);
+
+            item.AdvertisementName.NormalizeAdvertisementName();
+            item.AdvertisementName.ValidatePlatformName();
+
+            if (item.LocationPaths == null || !item.LocationPaths.Any())
+                throw new DomainValidationException(ErrorMessages.EMPTY_LOCATIONS_COLLECTION_FOR_PLATFORM);
+
+            item.LocationPaths = item.LocationPaths
+                .Select(path =>
+                {
+                    path.NormalizeLocationPath();
+                    path.ValidateLocation();
+                    return path;
+                })
+                .ToList();
+
+            return item;
         }
     }
 }

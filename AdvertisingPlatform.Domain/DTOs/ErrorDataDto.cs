@@ -1,16 +1,18 @@
 ﻿
+using AdvertisingPlatforms.Domain.Enums;
+
 namespace AdvertisingPlatforms.Domain.DTOs
 {
-    public class UploadErrorDto
+    public class ErrorDataDto
     {
         public string RawData { get; set; }
-        public string ErrorType { get; set; }
+        public ErrorType Type { get; set; }
         public string ErrorMessage { get; set; }
 
-        public UploadErrorDto(string rawData, string errorType, string errorMessage)
+        public ErrorDataDto(string rawData, ErrorType errorType, string errorMessage)
         {
             RawData = rawData;
-            ErrorType = errorType;
+            Type = errorType;
             ErrorMessage = errorMessage;
         }
     }
