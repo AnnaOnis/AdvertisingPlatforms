@@ -127,7 +127,7 @@ deploy-job:
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD"
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true && docker rm $CI_PROJECT_NAME || true"
-    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always $DOCKER_IMAGE"
+    - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always -e CONNECTION_STRING="$CONNECTION_STRING" $DOCKER_IMAGE"
   rules:
     - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
