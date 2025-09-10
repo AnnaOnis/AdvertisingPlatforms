@@ -49,13 +49,13 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
                 {
                     try
                     {
-                        var cr = await Task.Run(() =>
+                        var consumeResult = await Task.Run(() =>
                             consumer.Consume(TimeSpan.FromMilliseconds(100)),
                             stoppingToken);
 
-                        if (cr != null)
+                        if (consumeResult != null)
                         {
-                            batch.Add(cr);
+                            batch.Add(consumeResult);
                         }
                         
                         if (ShouldFlush(batch) || IsCommitIntervalExceeded(lastCommitTime))

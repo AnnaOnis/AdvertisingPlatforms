@@ -26,17 +26,11 @@ namespace AdvertisingPlatforms.Domain.Parsers
             };
         }
 
-        public bool CanParse(IFileData fileData)
-        {
-            return fileData.ContentType == "application/json" ||
+        public bool CanParse(IFileData fileData) => fileData.ContentType == "application/json" ||
                    Path.GetExtension(fileData.FileName).Equals(".json", StringComparison.OrdinalIgnoreCase);
-        }
 
-        public bool CanParse(string contentTypeOrExtension)
-        {
-            return contentTypeOrExtension == "application/json" ||
+        public bool CanParse(string contentTypeOrExtension) => contentTypeOrExtension == "application/json" ||
                    contentTypeOrExtension.Equals(".json", StringComparison.OrdinalIgnoreCase);
-        }
 
         public async Task<ParsingResult> Parse(IFileData fileData, CancellationToken cancellationToken)
         {

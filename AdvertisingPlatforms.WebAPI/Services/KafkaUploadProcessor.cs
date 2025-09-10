@@ -1,9 +1,7 @@
 using AdvertisingPlatforms.Base.Constants;
 using AdvertisingPlatforms.DAL.Abstractions;
 using AdvertisingPlatforms.Domain.Abstractions;
-using AdvertisingPlatforms.Domain.DTOs;
 using AdvertisingPlatforms.Kafka.Abstractions;
-using AdvertisingPlatforms.Kafka.Models;
 using Confluent.Kafka;
 using System.Diagnostics;
 using System.Text;

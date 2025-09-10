@@ -260,7 +260,7 @@ namespace AdvertisingPlatforms.Domain.Services
             return advertisementDictionary;
         }
 
-        private async Task CreateAdvettisingPlatforms(IReadOnlyCollection<ValidDataDto> parseData, 
+        private async Task CreateAdvettisingPlatforms(IEnumerable<ValidDataDto> parseData, 
             Dictionary<string, LocationDb> locations,
             Dictionary<string, AdvertisementDb> advertisements,
             List<ErrorDataDto> duplicateErrors,

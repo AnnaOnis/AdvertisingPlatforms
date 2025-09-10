@@ -29,10 +29,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<AdvertisingPlatform> GetById(Guid platformId, CancellationToken cancellationToken)
         {
-            if (!await _advertisingPlatformRepository.Exists(platformId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, platformId);
-            }
+            await ValidateEntityExists(platformId, _advertisingPlatformRepository.Exists, cancellationToken);
+
             var platformDb = await _advertisingPlatformRepository.GetById(platformId, cancellationToken);
             var platform = _factory.Create(platformDb);
             return platform;
@@ -47,14 +45,9 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<AdvertisingPlatform> CreatePlatform(Guid advertisementId, Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _advertisementRepository.Exists(advertisementId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
-            }
-            if (!await _locationRepository.Exists(locationId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
-            }
+            await ValidateEntityExists(advertisementId, _advertisementRepository.Exists, cancellationToken);
+            await ValidateEntityExists(locationId, _locationRepository.Exists, cancellationToken);
+
             if (await _advertisingPlatformRepository.ExistsByAdvertisementAndLocation(advertisementId, 
                 locationId, 
                 cancellationToken))
@@ -69,18 +62,10 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdatePlatform(Guid platformId, Guid newAdvertisementId, Guid newLocationId, CancellationToken cancellationToken)
         {
-            if (!await _advertisingPlatformRepository.Exists(platformId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, platformId);
-            }
-            if (!await _advertisementRepository.Exists(newAdvertisementId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, newAdvertisementId);
-            }
-            if (!await _locationRepository.Exists(newLocationId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, newLocationId);
-            }
+            await ValidateEntityExists(platformId, _advertisingPlatformRepository.Exists, cancellationToken);
+            await ValidateEntityExists(newAdvertisementId, _advertisementRepository.Exists, cancellationToken);
+            await ValidateEntityExists(newLocationId, _locationRepository.Exists, cancellationToken);
+
             var updatingPlatformDb = await _advertisingPlatformRepository.GetById(platformId, cancellationToken);
             updatingPlatformDb.AdvertisementId = newAdvertisementId;
             updatingPlatformDb.LocationId = newLocationId;
@@ -89,10 +74,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task DeletePlatform(Guid platformId, CancellationToken cancellationToken)
         {
-            if (!await _advertisingPlatformRepository.Exists(platformId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, platformId);
-            }
+            await ValidateEntityExists(platformId, _advertisingPlatformRepository.Exists, cancellationToken);
+
             await _advertisingPlatformRepository.Delete(platformId, cancellationToken);
         }
 
@@ -102,24 +85,35 @@ namespace AdvertisingPlatforms.Domain.Services
             bool isAsc = true)
         {
             var locationDb = await _locationRepository.FindByPath(locationPath, cancellationToken);
-            if (locationDb != null)
-            {
-                var platformsDb = await _advertisingPlatformRepository.FindByLocation(locationDb, cancellationToken, GetSorter(sortBy, isAsc));
-                var platforms = _factory.CreateMany(platformsDb);
-                return platforms;
-            }
-            return Array.Empty<AdvertisingPlatform>();
+            if (locationDb == null) return Array.Empty<AdvertisingPlatform>();
+
+            var platformsDb = await _advertisingPlatformRepository.FindByLocation(locationDb, cancellationToken, GetSorter(sortBy, isAsc));
+            var platforms = _factory.CreateMany(platformsDb);
+            return platforms;            
         }
 
         private static AdvertisingPlatformsSortDelegate? GetSorter(string? sortBy, bool isAsc)
         {
             AdvertisingPlatformsSortDelegate? sorter = sortBy?.ToLower() switch
             {
-                "name" => platforms => isAsc ? platforms.OrderBy(p => p.Advertisement.Name) : platforms.OrderByDescending(p => p.Advertisement.Name),
+                "name" => platforms => isAsc 
+                    ? platforms.OrderBy(p => p.Advertisement.Name) 
+                    : platforms.OrderByDescending(p => p.Advertisement.Name),
                 _ => null
             };
 
             return sorter;
+        }
+
+        private async Task ValidateEntityExists(
+            Guid entityId,
+            Func<Guid, CancellationToken, Task<bool>> existsFunc,
+            CancellationToken cancellationToken)
+        {
+            if (!await existsFunc(entityId, cancellationToken))
+            {
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, entityId);
+            }
         }
     }
 }
