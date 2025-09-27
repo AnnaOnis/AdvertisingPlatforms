@@ -105,12 +105,11 @@ namespace AdvertisingPlatforms.Domain.Services
             return sorter;
         }
 
-        private async Task ValidateEntityExists(
-            Guid entityId,
-            Func<Guid, CancellationToken, Task<bool>> existsFunc,
+        private async Task ValidateEntityExists(Guid entityId,
+            Func<Guid, CancellationToken, Task<bool>> existenceCheсker,
             CancellationToken cancellationToken)
         {
-            if (!await existsFunc(entityId, cancellationToken))
+            if (!await existenceCheсker(entityId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, entityId);
             }

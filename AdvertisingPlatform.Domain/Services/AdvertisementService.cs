@@ -22,10 +22,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement> GetById(Guid advertisementId, CancellationToken cancellationToken)
         {
-            if (!await _advertisementRepository.Exists(advertisementId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
-            }
+            await ValidateEntityExists(advertisementId, _advertisementRepository.Exists, cancellationToken);
+
             var advertisementDb = await _advertisementRepository.GetById(advertisementId, cancellationToken);
             var advertisement = _factory.Create(advertisementDb);
             return advertisement;
@@ -40,10 +38,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Advertisement> CreateAdvertisement(string advertisementName, CancellationToken cancellationToken)
         {
-            if (await _advertisementRepository.ExistsByName(advertisementName, cancellationToken))
-            {
-                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + advertisementName);
-            }
+            await ValidateEntityNotExists(advertisementName, _advertisementRepository.ExistsByName, cancellationToken);
+
             var advertisementDb = new AdvertisementDb(advertisementName);
             await _advertisementRepository.Add(advertisementDb, cancellationToken);
             
@@ -52,25 +48,23 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateAdvertisement(Guid advertisementId, string newAdvertisementName, CancellationToken cancellationToken)
         {
-            if (!await _advertisementRepository.Exists(advertisementId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
-            }
-            if(await _advertisementRepository.ExistsByName(newAdvertisementName, cancellationToken))
-            {
-                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + newAdvertisementName);
-            }
+            await ValidateEntityExists(advertisementId, _advertisementRepository.Exists, cancellationToken);
+
             var advertisementDb = await _advertisementRepository.GetById(advertisementId, cancellationToken);
+
+            if(advertisementDb.Name != newAdvertisementName)
+            {
+                await ValidateEntityNotExists(newAdvertisementName, _advertisementRepository.ExistsByName, cancellationToken);
+            }
+            
             advertisementDb.Name = newAdvertisementName;
             await _advertisementRepository.Update(advertisementDb, cancellationToken);
         }
 
         public async Task DeleteAdvertisement(Guid advertisementId, CancellationToken cancellationToken)
         {
-            if (!await _advertisementRepository.Exists(advertisementId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, advertisementId);
-            }
+            await ValidateEntityExists(advertisementId, _advertisementRepository.Exists, cancellationToken);
+
             await _advertisementRepository.Delete(advertisementId, cancellationToken);
         }
 
@@ -81,6 +75,26 @@ namespace AdvertisingPlatforms.Domain.Services
             
             var advertisement = _factory.Create(advertisementDb);
             return advertisement;
+        }
+
+        private async Task ValidateEntityExists(Guid entityId,
+            Func<Guid, CancellationToken, Task<bool>> existenceCheñker,
+            CancellationToken cancellationToken)
+        {
+            if (!await existenceCheñker(entityId, cancellationToken))
+            {
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, entityId);
+            }
+        }
+
+        private async Task ValidateEntityNotExists(string uniqueValue,
+            Func<string, CancellationToken, Task<bool>> existenceChecker,
+            CancellationToken cancellationToken)
+        {
+            if (await existenceChecker(uniqueValue, cancellationToken))
+            {
+                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + uniqueValue);
+            }
         }
     }
 } 

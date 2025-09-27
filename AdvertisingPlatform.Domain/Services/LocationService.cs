@@ -1,9 +1,9 @@
-using AdvertisingPlatforms.Domain.Abstractions;
-using AdvertisingPlatforms.DAL.Entities;
-using AdvertisingPlatforms.DAL.Abstractions;
-using AdvertisingPlatforms.Domain.Models;
-using AdvertisingPlatforms.Base.Exceptions;
 using AdvertisingPlatforms.Base.Constants;
+using AdvertisingPlatforms.Base.Exceptions;
+using AdvertisingPlatforms.DAL.Abstractions;
+using AdvertisingPlatforms.DAL.Entities;
+using AdvertisingPlatforms.Domain.Abstractions;
+using AdvertisingPlatforms.Domain.Models;
 
 namespace AdvertisingPlatforms.Domain.Services
 {
@@ -21,10 +21,8 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Location> GetById(Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _locationRepository.Exists(locationId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
-            }
+            await ValidateEntityExists(locationId, _locationRepository.Exists, cancellationToken);
+ 
             var locationDb = await _locationRepository.GetById(locationId, cancellationToken);
             var location = _factory.Create(locationDb);
             return location;
@@ -39,13 +37,10 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task<Location> CreateLocation(string locationPath, Guid? parentId, CancellationToken cancellationToken)
         {
-            if (await _locationRepository.ExistsByPath(locationPath, cancellationToken))
+            await ValidateEntityNotExists(locationPath, _locationRepository.ExistsByPath, cancellationToken);
+            if(parentId != null)
             {
-                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + locationPath);
-            }
-            if(parentId != null && !await _locationRepository.Exists(parentId.Value, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, parentId);
+                await ValidateEntityExists(parentId.Value, _locationRepository.Exists, cancellationToken);
             }
             var locationDb = new LocationDb(locationPath, parentId);
             await _locationRepository.Add(locationDb, cancellationToken);
@@ -55,19 +50,20 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task UpdateLocation(Guid locationId, string newLocationPath, Guid? newparentId, CancellationToken cancellationToken)
         {
-            if (!await _locationRepository.Exists(locationId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
-            }
-            if (newparentId != null && !await _locationRepository.Exists(newparentId.Value, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, newparentId);
-            }
-            if (await _locationRepository.ExistsByPath(newLocationPath, cancellationToken))
-            {
-                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + newLocationPath);
-            }
+            await ValidateEntityExists(locationId, _locationRepository.Exists, cancellationToken);
+
             var locationDb = await _locationRepository.GetById(locationId, cancellationToken);
+
+            if(locationDb.Path != newLocationPath)
+            {
+                await ValidateEntityNotExists(newLocationPath, _locationRepository.ExistsByPath, cancellationToken);
+            }       
+            
+            if (newparentId != null)
+            {
+                await ValidateEntityExists(newparentId.Value, _locationRepository.Exists, cancellationToken);
+            }
+            
             locationDb.Path = newLocationPath;
             locationDb.ParentId = newparentId;
             await _locationRepository.Update(locationDb, cancellationToken);
@@ -75,10 +71,7 @@ namespace AdvertisingPlatforms.Domain.Services
 
         public async Task DeleteLocation(Guid locationId, CancellationToken cancellationToken)
         {
-            if (!await _locationRepository.Exists(locationId, cancellationToken))
-            {
-                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, locationId);
-            }
+            await ValidateEntityExists(locationId, _locationRepository.Exists, cancellationToken);
             await _locationRepository.Delete(locationId, cancellationToken);
         }
 
@@ -89,6 +82,26 @@ namespace AdvertisingPlatforms.Domain.Services
             
             var location = _factory.Create(locationDb);
             return location;
+        }
+
+        private async Task ValidateEntityExists(Guid entityId, 
+            Func<Guid, CancellationToken, Task<bool>> existenceCheñker, 
+            CancellationToken cancellationToken)
+        {
+            if(!await existenceCheñker(entityId, cancellationToken))
+            {
+                throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, entityId);
+            }  
+        }
+
+        private async Task ValidateEntityNotExists(string uniqueValue, 
+            Func<string, CancellationToken, Task<bool>> existenceChecker, 
+            CancellationToken cancellationToken)
+        {
+            if (await existenceChecker(uniqueValue, cancellationToken))
+            {
+                throw new EntityAlreadyExistsException(ErrorMessages.ENTITY_ALREADY_EXISTS + uniqueValue);
+            }
         }
     }
 } 
