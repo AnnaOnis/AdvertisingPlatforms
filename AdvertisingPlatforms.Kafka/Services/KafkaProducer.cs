@@ -16,6 +16,11 @@ namespace AdvertisingPlatforms.Kafka.Services
         {
             _settings = options.Value;
             _logger = logger;
+            _producer = CreateProducer();
+        }
+
+        private IProducer<string, string> CreateProducer()
+        {
             var config = new ProducerConfig
             {
                 BootstrapServers = _settings.BootstrapServers,
@@ -26,9 +31,10 @@ namespace AdvertisingPlatforms.Kafka.Services
                 SaslMechanism = _settings.SaslMechanism,
                 Acks = Acks.All,
                 EnableIdempotence = true,
-                BatchSize = 64 * 1024,                
+                BatchSize = 64 * 1024,
             };
-            _producer = new ProducerBuilder<string, string>(config).Build();
+            var producer = new ProducerBuilder<string, string>(config).Build();
+            return producer;
         }
 
         public async Task ProduceAsync(string topic, string key, string value, CancellationToken cancellationToken)
@@ -42,10 +48,10 @@ namespace AdvertisingPlatforms.Kafka.Services
         {
             foreach (var batch in messages.Chunk(100))
             {
-                var tasks = batch.Select(m => _producer.ProduceAsync(topic, new Message<string, string>
+                var tasks = batch.Select(message => _producer.ProduceAsync(topic, new Message<string, string>
                 {
-                    Key = m.key,
-                    Value = m.value
+                    Key = message.key,
+                    Value = message.value
                 }, cancellationToken));
                 await Task.WhenAll(tasks);
             }

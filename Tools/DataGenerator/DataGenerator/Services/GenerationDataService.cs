@@ -8,21 +8,22 @@ namespace DataGenerator.Services
     public class GenerationDataService : IGenerationDataService
     {
         private readonly ILogger<GenerationDataService> _logger;
+        private readonly List<string> _locations;
 
         public GenerationDataService(
             ILogger<GenerationDataService> logger)
         {
             _logger = logger;
+            _locations = GenerateLocationHierarchy();
         }
 
         public List<Advertisement> GenerateTestData(int count)
         {
-            var locationHierarchy = GenerateLocationHierarchy();
             var advertisements = new List<Advertisement>();
 
             for (int i = 0; i < count; i++)
             {
-                advertisements.Add(new Advertisement(GenerateAdvertisementName(), SelectLocations(locationHierarchy)));
+                advertisements.Add(new Advertisement(GenerateAdvertisementName(), SelectLocations(_locations)));
             }
 
             return advertisements;

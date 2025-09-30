@@ -7,68 +7,29 @@ using Microsoft.Extensions.Options;
 
 namespace AdvertisingPlatforms.Kafka.HostedServices
 {
-    public class KafkaSingleMessageConsumerHostedService : BackgroundService
+    public class KafkaSingleMessageConsumerHostedService : KafkaConsumerBase
     {
-        private readonly ILogger<KafkaSingleMessageConsumerHostedService> _logger;
-        private readonly KafkaSettings _settings;
         private readonly ISingleMessageKafkaConsumerProcessor _processor;
 
         public KafkaSingleMessageConsumerHostedService(
+            ILogger<KafkaSingleMessageConsumerHostedService> logger,
             IOptions<KafkaSettings> options,
-            ISingleMessageKafkaConsumerProcessor processor,
-            ILogger<KafkaSingleMessageConsumerHostedService> logger)
+            ISingleMessageKafkaConsumerProcessor processor)
+            : base(logger, options, options.Value.ComandTopic)
         {
-            _logger = logger;
-            _settings = options.Value;
             _processor = processor;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ConsumeMessagesAsync(IConsumer<string, string> consumer, CancellationToken stoppingToken)
         {
-            var consumerConfig = new ConsumerConfig
+            while (!stoppingToken.IsCancellationRequested)
             {
-                BootstrapServers = _settings.BootstrapServers,
-                GroupId = _settings.ConsumerGroupId,
-                SecurityProtocol = _settings.SecurityProtocol,
-                SaslUsername = _settings.SaslUsername,
-                SaslPassword = _settings.SaslPassword,
-                SaslMechanism = _settings.SaslMechanism,
-                AutoOffsetReset = _settings.AutoOffsetReset,
-                EnableAutoCommit = true
-            };
+                var consumeResult = await ConsumeMessageAsync(consumer, stoppingToken);
 
-            using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-            consumer.Subscribe(_settings.ComandTopic);
-
-            try
-            {
-                while (!stoppingToken.IsCancellationRequested)
+                if (consumeResult != null)
                 {
-                    try
-                    {
-                        var consumeResult = await Task.Run(() =>
-                         consumer.Consume(TimeSpan.FromMilliseconds(100)),
-                         stoppingToken);
-
-                        if (consumeResult != null)
-                        {
-                            await _processor.ProcessSingleMessageAsync(consumeResult, stoppingToken);
-                        }
-                    }
-                    catch (ConsumeException ex)
-                    {
-                        _logger.LogError(ex, "Kafka consume error: {Reason}", ex.Error.Reason);
-                        await Task.Delay(3000, stoppingToken);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Игнорируем отмену
-                    }
+                    await _processor.ProcessSingleMessageAsync(consumeResult, stoppingToken);
                 }
-            }
-            finally
-            {
-                consumer.Close();
             }
         }
     }

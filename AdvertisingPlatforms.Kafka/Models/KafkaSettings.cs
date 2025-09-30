@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using AdvertisingPlatforms.Kafka.Constants;
 
 namespace AdvertisingPlatforms.Kafka.Models
 {
@@ -13,11 +14,11 @@ namespace AdvertisingPlatforms.Kafka.Models
         public string SaslPassword { get; set; } = null!;
         public SecurityProtocol? SecurityProtocol { get; set; } = null!;
         public SaslMechanism? SaslMechanism { get; set; } = null!;
-        public int MaxBatchSize { get; set; } = 100;
-        public int MaxBatchBytes { get; set; } = 102400;
+        public int MaxBatchSize { get; set; } = KafkaConstants.MAX_BATCH_SIZE;
+        public int MaxBatchBytes { get; set; } = KafkaConstants.MAX_BATCH_BYTES;
         public AutoOffsetReset? AutoOffsetReset { get; set; }
-        public int PollIntervalMs { get; set; } = 10000;
-        public int CommitIntervalMs { get; set; } = 5000;
+        public int PollIntervalMs { get; set; } = KafkaConstants.POLL_INTERVAL_MS;
+        public int CommitIntervalMs { get; set; } = KafkaConstants.COMMIT_INTERVAL_MS;
     }
 }
 

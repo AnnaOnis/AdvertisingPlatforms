@@ -8,89 +8,47 @@ using Microsoft.Extensions.Options;
 
 namespace AdvertisingPlatforms.Kafka.HostedServices
 {
-    public class KafkaBatchConsumerHostedService : BackgroundService
+    public class KafkaBatchConsumerHostedService : KafkaConsumerBase
     {
-        private readonly ILogger<KafkaBatchConsumerHostedService> _logger;
-        private readonly KafkaSettings _settings;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public KafkaBatchConsumerHostedService(IOptions<KafkaSettings> options,
-            IServiceScopeFactory scopeFactory,
-            ILogger<KafkaBatchConsumerHostedService> logger)
+        public KafkaBatchConsumerHostedService(
+            ILogger<KafkaBatchConsumerHostedService> logger,
+            IOptions<KafkaSettings> options,
+            IServiceScopeFactory scopeFactory)
+            : base(logger, options, options.Value.DataTopic)
         {
-            _logger = logger;
             _scopeFactory = scopeFactory;
-            _settings = options.Value;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ConsumeMessagesAsync(IConsumer<string, string> consumer, CancellationToken stoppingToken)
         {
-            var consumerConfig = new ConsumerConfig
+            var batch = new List<ConsumeResult<string, string>>(Settings.MaxBatchSize);
+            var lastCommitTime = DateTime.UtcNow;
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                BootstrapServers = _settings.BootstrapServers,
-                GroupId = _settings.ConsumerGroupId,
-                SecurityProtocol = _settings.SecurityProtocol,
-                SaslUsername = _settings.SaslUsername,
-                SaslPassword = _settings.SaslPassword,
-                SaslMechanism = _settings.SaslMechanism,
-                AutoOffsetReset = _settings.AutoOffsetReset,
-                EnableAutoCommit = false
-            };
+                var consumeResult = await ConsumeMessageAsync(consumer, stoppingToken);
 
-            using var consumer = new ConsumerBuilder<string, string>(consumerConfig).Build();
-            consumer.Subscribe(_settings.DataTopic);
-
-            try
-            {
-                var batch = new List<ConsumeResult<string, string>>(_settings.MaxBatchSize);
-                var lastCommitTime = DateTime.UtcNow;
-
-                while (!stoppingToken.IsCancellationRequested)
+                if (consumeResult != null)
                 {
-                    try
-                    {
-                        var consumeResult = await Task.Run(() =>
-                            consumer.Consume(TimeSpan.FromMilliseconds(100)),
-                            stoppingToken);
-
-                        if (consumeResult != null)
-                        {
-                            batch.Add(consumeResult);
-                        }
-                        
-                        if (ShouldFlush(batch) || IsCommitIntervalExceeded(lastCommitTime))
-                        {
-                            await FlushAndCommitAsync(consumer, batch, stoppingToken);
-                            lastCommitTime = DateTime.UtcNow;
-                        }
-                    }
-                    catch (ConsumeException ex)
-                    {
-                        _logger.LogError(ex, "Kafka consume error: {Reason}", ex.Error.Reason);
-                        await Task.Delay(1000, stoppingToken);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // Игнорируем отмену
-                    }
+                    batch.Add(consumeResult);
                 }
-            }
-            finally
-            {
-                await FlushAndCommitAsync(consumer, new List<ConsumeResult<string, string>>(), stoppingToken);
-                consumer.Close();
+
+                if (ShouldFlush(batch) || IsCommitIntervalExceeded(lastCommitTime))
+                {
+                    await FlushAndCommitAsync(consumer, batch, stoppingToken);
+                    lastCommitTime = DateTime.UtcNow;
+                }
             }
         }
 
         private bool ShouldFlush(List<ConsumeResult<string, string>> batch)
-            => batch.Count >= _settings.MaxBatchSize ||
-               batch.Sum(x => (x.Message?.Key?.Length ?? 0) + (x.Message?.Value?.Length ?? 0)) >= _settings.MaxBatchBytes;
+            => batch.Count >= Settings.MaxBatchSize ||
+               batch.Sum(x => (x.Message?.Key?.Length ?? 0) + (x.Message?.Value?.Length ?? 0)) >= Settings.MaxBatchBytes;
 
         private bool IsCommitIntervalExceeded(DateTime lastCommitTime)
-            => (DateTime.UtcNow - lastCommitTime).TotalMilliseconds > _settings.CommitIntervalMs;
-
-        private bool IsLastMessageIntervalExceeded(DateTime lastMessageTime)
-             => (DateTime.UtcNow - lastMessageTime).TotalMilliseconds > _settings.CommitIntervalMs;
+            => (DateTime.UtcNow - lastCommitTime).TotalMilliseconds > Settings.CommitIntervalMs;
 
         private async Task FlushAndCommitAsync(IConsumer<string, string> consumer, List<ConsumeResult<string, string>> batch, CancellationToken token)
         {
@@ -103,13 +61,11 @@ namespace AdvertisingPlatforms.Kafka.HostedServices
                 await processor.ProcessBatchAsync(batch, token);
 
                 consumer.Commit(batch.Select(x => x.TopicPartitionOffset));
-
                 batch.Clear();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to process batch of {Count} messages", batch.Count);
-
+                Logger.LogError(ex, "Failed to process batch of {Count} messages", batch.Count);
                 throw;
             }
         }

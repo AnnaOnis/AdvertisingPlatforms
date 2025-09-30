@@ -38,7 +38,7 @@ namespace AdvertisingPlatforms.Base.Extensions
                 "application/xml",
             };
 
-            return textTypes.Any(t => contentType.Contains(t));
+            return textTypes.Any(contentType.Contains);
         }
     }
 }
