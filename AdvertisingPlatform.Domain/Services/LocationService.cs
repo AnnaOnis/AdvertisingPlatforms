@@ -85,10 +85,10 @@ namespace AdvertisingPlatforms.Domain.Services
         }
 
         private async Task ValidateEntityExists(Guid entityId, 
-            Func<Guid, CancellationToken, Task<bool>> existenceCheñker, 
+            Func<Guid, CancellationToken, Task<bool>> existenceChecker, 
             CancellationToken cancellationToken)
         {
-            if(!await existenceCheñker(entityId, cancellationToken))
+            if(!await existenceChecker(entityId, cancellationToken))
             {
                 throw new EntityNotFoundException(ErrorMessages.ENTITY_NOT_FOUND, entityId);
             }  
