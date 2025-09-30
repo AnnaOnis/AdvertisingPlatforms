@@ -2,6 +2,7 @@ stages:
   - test
   - sast
   - docker-publish
+  - nuget-publish
   - cleanup
   - migrate
   - deploy
@@ -17,12 +18,14 @@ variables:
 
   # Docker/Registry
   DOCKER_REGISTRY: nexus.effective-mobile.ru:5000
-  DOCKER_TAG: "$CI_COMMIT_REF_SLUG"
+  DOCKER_TAG: "latest"
   DOCKER_IMAGE: "$DOCKER_REGISTRY/$CI_PROJECT_NAME:$DOCKER_TAG"
 
   # Кэши и артефакты
+  NUGET_REPO_URL: "https://nexus.effective-mobile.ru/repository/nuget-hosted/AdvertisingPlatforms/"
   NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
   NUGET_PACKAGES_DIR: "$CI_PROJECT_DIR/.nuget/packages"
+  NUGET_PATH: "nuget"
   ARTIFACTS_DIR: "$CI_PROJECT_DIR/artifacts"
   TRIVY_CACHE_DIR: "$CI_PROJECT_DIR/.trivycache"
   
@@ -45,8 +48,6 @@ unit-test-job:
      - dotnet test
      - dotnet test --no-restore --configuration $BUILD_CONFIGURATION
   when: manual
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 # ---------- SAST / SONAR ----------
 sonarqube-check-job:
@@ -68,8 +69,6 @@ sonarqube-check-job:
       - dotnet build --configuration $BUILD_CONFIGURATION
       - dotnet sonarscanner end /d:sonar.login=$SONAR_TOKEN
   allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 # ---------- DOCKER BUILD & PUSH (socket mode) ----------
 docker-publish-job:
@@ -81,8 +80,30 @@ docker-publish-job:
     - docker login $DOCKER_REGISTRY -u $NEXUS_USER -p $NEXUS_PASSWORD
     - docker build -t $DOCKER_IMAGE .
     - docker push $DOCKER_IMAGE
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
+
+nuget-publish-job:
+  stage: nuget-publish
+  image: mcr.microsoft.com/dotnet/sdk:$DOTNET_VERSION
+  script:
+    - dotnet restore
+    - dotnet pack -c Release
+    - |
+      for pkg in $(find . -type f -name "User4*.nupkg"); do
+        if [ -f "$pkg" ]; then
+          echo "Публикация пакета: $pkg"
+          dotnet nuget push "$pkg" \
+            --source "$NUGET_REPO_URL" \
+            -k "96c4ffe8-b9b9-353a-9554-92223594dac4" \
+            --skip-duplicate
+          if [ $? -ne 0 ]; then
+            echo "Ошибка при публикации пакета $pkg"
+            exit 1
+          fi
+        else
+          echo "Пакеты .nupkg не найдены для публикации."
+          exit 1
+        fi
+      done
 
 # ---------- CLEANUP: чистим локальные слои/кэш на раннере ----------
 cleanup-runner-cache:
@@ -94,9 +115,6 @@ cleanup-runner-cache:
     - docker image prune -f
     - docker builder prune -af
     - docker container prune -f
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
-
 
 # ---------- (опционально) MIGRATIONS ----------
 migrate-database-job:
@@ -108,8 +126,6 @@ migrate-database-job:
     - dotnet ef database update --project AdvertisingPlatforms.DAL/AdvertisingPlatforms.DAL.csproj --startup-project AdvertisingPlatforms.WebAPI/AdvertisingPlatforms.Web.csproj --connection "$CONNECTION_STRING"
   when: manual
   allow_failure: true
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 # ---------- DEPLOY ----------
 deploy-job:
@@ -128,8 +144,6 @@ deploy-job:
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker pull $DOCKER_IMAGE"
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker stop $CI_PROJECT_NAME || true && docker rm $CI_PROJECT_NAME || true"
     - ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "docker run -d --name $CI_PROJECT_NAME -p $USER_PORT:8080 --restart always -e CONNECTION_STRING='$CONNECTION_STRING' $DOCKER_IMAGE"
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 # ---------- SECURITY SCAN (MANUAL, по образу) ----------
 trivy-scan-job:
@@ -149,8 +163,6 @@ trivy-scan-job:
     expire_in: 15 minutes
   allow_failure: true
   when: manual
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"'
 
 # ---------- DAST (MANUAL, тяжёлый) ----------
 zap-scan-job:
@@ -167,6 +179,4 @@ zap-scan-job:
       - report-$CI_COMMIT_SHORT_SHA.html
       - report-$CI_COMMIT_SHORT_SHA.json
     expire_in: 15 minutes 
-  when: manual  
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "modul_4"' 
+  when: manual
